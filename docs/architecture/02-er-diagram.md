@@ -22,7 +22,7 @@ erDiagram
     MIGRATION_BLUEPRINT ||--|| ATLAS_SCORE : generates
 ```
 
----
+-------------------------------------------------------------------------------------
 
 # Relationship Notes
 
