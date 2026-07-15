@@ -6,6 +6,10 @@ const envSchema = z.object({
     .default("development"),
 
   PORT: z.coerce.number().int().positive().default(3000),
+
+  LOG_LEVEL: z
+  .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
+  .default("info"),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
