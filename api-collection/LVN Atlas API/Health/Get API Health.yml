@@ -1,0 +1,31 @@
+info:
+  name: Get API Health
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 200 status", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should return successful health response", function () {
+          const body = res.getBody();
+
+          expect(body.success).to.equal(true);
+          expect(body.message).to.equal("LVN Atlas API is running");
+          expect(body.version).to.equal("0.1.0");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
