@@ -9,9 +9,12 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "dev": "echo \"Workspace initialized\"",
-    "build": "echo \"Nothing to build yet\"",
-    "lint": "echo \"Lint not configured\"",
-    "test": "echo \"Tests not configured\""
+    "dev": "pnpm --filter @lvn/api dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "pnpm -r format",
+    "format:check": "pnpm -r format:check",
+    "check": "pnpm lint && pnpm typecheck && pnpm format:check && pnpm build"
   }
 }
