@@ -11,7 +11,6 @@ app.use(express.json());
 // API routes
 app.use("/api/v1", apiRouter);
 
-
 // Handle unmatched routes
 app.use(notFoundHandler);
 

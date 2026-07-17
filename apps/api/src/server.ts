@@ -6,10 +6,10 @@ import { env } from "./config/env.js";
 
 app.listen(env.PORT, () => {
   logger.info(
-  {
-    port: env.PORT,
-    environment: env.NODE_ENV,
-  },
-  "LVN Atlas API started",
-);
+    {
+      port: env.PORT,
+      environment: env.NODE_ENV,
+    },
+    "LVN Atlas API started",
+  );
 });
