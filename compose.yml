@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: lvn-atlas-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: lvn_atlas
+      POSTGRES_PASSWORD: lvn_atlas_dev
+      POSTGRES_DB: lvn_atlas
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - lvn_atlas_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lvn_atlas -d lvn_atlas"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  lvn_atlas_postgres_data:
