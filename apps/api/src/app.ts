@@ -1,5 +1,6 @@
 import express from "express";
 
+import cityRouter from "./routes/city.routes.js";
 import { errorHandler } from "./middleware/error-handler.middleware.js";
 import { notFoundHandler } from "./middleware/not-found.middleware.js";
 import apiRouter from "./routes/index.routes.js";
@@ -10,6 +11,7 @@ app.use(express.json());
 
 // API routes
 app.use("/api/v1", apiRouter);
+app.use("/api/v1/cities", cityRouter);
 
 // Handle unmatched routes
 app.use(notFoundHandler);
