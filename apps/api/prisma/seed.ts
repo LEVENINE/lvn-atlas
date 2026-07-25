@@ -23,8 +23,23 @@ const expenseCategories = [
   "Miscellaneous",
 ];
 
+const cities = [
+  { name: "Mumbai", state: "Maharashtra", country: "India" },
+  { name: "Pune", state: "Maharashtra", country: "India" },
+  { name: "Bengaluru", state: "Karnataka", country: "India" },
+  { name: "Hyderabad", state: "Telangana", country: "India" },
+  { name: "Chennai", state: "Tamil Nadu", country: "India" },
+  { name: "Delhi", state: "Delhi", country: "India" },
+  { name: "Jaipur", state: "Rajasthan", country: "India" },
+  { name: "Ahmedabad", state: "Gujarat", country: "India" },
+  { name: "Kolkata", state: "West Bengal", country: "India" },
+  { name: "Kochi", state: "Kerala", country: "India" },
+  { name: "Lucknow", state: "Uttar Pradesh", country: "India" },
+  { name: "Indore", state: "Madhya Pradesh", country: "India" },
+];
+
 async function main() {
-  console.log("Seeding database...");
+  console.log("🌱 Seeding reference data...");
 
   for (const name of expenseCategories) {
     await prisma.expenseCategory.upsert({
@@ -34,7 +49,22 @@ async function main() {
     });
   }
 
-  console.log(`Seeded ${expenseCategories.length} expense categories.`);
+  for (const city of cities) {
+    await prisma.city.upsert({
+      where: {
+        name_state_country: {
+          name: city.name,
+          state: city.state,
+          country: city.country,
+        },
+      },
+      update: {},
+      create: city,
+    });
+  }
+
+  console.log(`✅ Seeded ${expenseCategories.length} expense categories.`);
+  console.log(`✅ Seeded ${cities.length} cities.`);
 }
 
 main()
