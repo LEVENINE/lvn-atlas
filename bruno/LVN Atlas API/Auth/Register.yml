@@ -1,0 +1,45 @@
+info:
+  name: Register
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}api/v1/auth/register"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "bruno.user.{{$randomInt}}@example.com",
+        "password": "Password123!",
+        "firstName": "Bruno",
+        "lastName": "Tester"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 201 status", function () {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("should return the new user without credentials", function () {
+          const body = res.getBody();
+
+          expect(body.user.email).to.include("bruno.user.");
+          expect(body.user.profile.firstName).to.equal("Bruno");
+          expect(body.user.passwordHash).to.be.undefined;
+          expect(body.accessToken).to.be.a("string");
+
+          bru.setVar("token", body.accessToken);
+          bru.setVar("userId", body.user.id);
+          bru.setVar("profileId", body.user.profile.id);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

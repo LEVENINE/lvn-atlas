@@ -7,8 +7,11 @@ import {
   getProfileById,
   updateProfile,
 } from "../controllers/profile.controller.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
 
 const profileRouter = Router();
+
+profileRouter.use(requireAuth);
 
 profileRouter.get("/", getAllProfiles);
 profileRouter.get("/:id", getProfileById);

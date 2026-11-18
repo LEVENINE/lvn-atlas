@@ -1,5 +1,6 @@
 import express from "express";
 
+import authRouter from "./routes/auth.routes.js";
 import cityRouter from "./routes/city.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import userRouter from "./routes/user.routes.js";
@@ -13,6 +14,7 @@ app.use(express.json());
 
 // API routes
 app.use("/api/v1", apiRouter);
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/cities", cityRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/profiles", profileRouter);

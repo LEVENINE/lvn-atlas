@@ -26,7 +26,7 @@ Already in place:
 
 In progress / incomplete:
 
-- Authentication and authorization are not implemented
+- Authentication is implemented; per-user authorization rules are not
 - Migration blueprints, budgets, journeys, and Atlas Score are not implemented
 - Automated tests and CI are not implemented
 
@@ -90,7 +90,8 @@ In progress / incomplete:
   - auth middleware
   - password and token utilities
   - protected route support
-- Status: Not started
+- Status: Complete
+- Notes: See `docs/architecture/05-authentication.md`. Per-user authorization is deferred.
 
 ### Split 0.7 — Testing and CI Baseline
 

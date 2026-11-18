@@ -8,8 +8,11 @@ import {
   updateUser,
 } from "../controllers/user.controller.js";
 import { getProfileByUserId } from "../controllers/profile.controller.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
 
 const userRouter = Router();
+
+userRouter.use(requireAuth);
 
 userRouter.get("/", getAllUsers);
 userRouter.get("/:id", getUserById);

@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { env } from "../src/config/env.js";
 import { PrismaClient } from "../src/generated/prisma/client.js";
+import { hashPassword } from "../src/utils/password.js";
 
 const adapter = new PrismaPg({
   connectionString: env.DATABASE_URL,
@@ -22,6 +23,8 @@ const expenseCategories = [
   "Entertainment",
   "Miscellaneous",
 ];
+
+const demoPassword = "Password123!";
 
 const cities = [
   { name: "Mumbai", state: "Maharashtra", country: "India" },
@@ -65,14 +68,19 @@ async function main() {
     });
   }
 
+  const passwordHash = await hashPassword(demoPassword);
+
   // User: John
   const john = await prisma.user.upsert({
     where: {
       email: "john@example.com",
     },
-    update: {},
+    update: {
+      passwordHash,
+    },
     create: {
       email: "john@example.com",
+      passwordHash,
     },
   });
 
@@ -97,9 +105,12 @@ async function main() {
     where: {
       email: "jane@example.com",
     },
-    update: {},
+    update: {
+      passwordHash,
+    },
     create: {
       email: "jane@example.com",
+      passwordHash,
     },
   });
 
@@ -121,7 +132,7 @@ async function main() {
 
   console.log(`✅ Seeded ${expenseCategories.length} expense categories.`);
   console.log(`✅ Seeded ${cities.length} cities.`);
-  console.log("✅ Seeded 2 users.");
+  console.log(`✅ Seeded 2 users with the demo password: ${demoPassword}`);
 }
 
 main()
