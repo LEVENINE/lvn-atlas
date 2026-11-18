@@ -1,6 +1,6 @@
 # LVN Atlas — Implementation Plan
 
-> Status: Planning  
+> Status: In development — backend foundation implemented
 > Source documents: `README.md`, `PRODUCT.md`, `DOMAIN_MODEL.md`, `ERD.md`, `MVP_FEATURES.md`, `USER_FLOW.md`, `USER_PERSONAS.md`, `USER_STORIES.md`, `docs/architecture/*`
 
 This document converts the product and domain documentation into an executable delivery plan.
@@ -23,13 +23,14 @@ Already in place:
 - Users and profiles API: read, update, and delete the authenticated user's own records
 - JWT authentication: register, login, current user, protected routes
 - Authorization: users can only access their own records
-- Bruno collections for health, cities, auth, users, and profiles
+- Migration Blueprint CRUD, scoped to the authenticated user
+- Bruno collections for health, cities, auth, users, profiles, and blueprints
 - Vitest API tests and a GitHub Actions CI workflow
 - Code-quality scripts: lint, typecheck, test, format, build
 
 In progress / incomplete:
 
-- Migration blueprints, budgets, journeys, and Atlas Score are not implemented
+- Budgets, expense items, journeys, and Atlas Score are not implemented
 - Integration tests run against a mocked Prisma client; no database is exercised in CI
 
 ---
@@ -49,7 +50,7 @@ In progress / incomplete:
 
 **Outcome:** A runnable, testable, documented backend base that later milestones can build on.
 
-**Status:** Mostly complete.
+**Status:** Splits 0.1–0.7 complete; Split 0.8 partial.
 
 ### Split 0.1 — Repository and Tooling
 
@@ -64,8 +65,8 @@ In progress / incomplete:
 ### Split 0.3 — Reference Data Seeding
 
 - Scope: expense categories, cities, demo users
-- Status: In progress
-- Notes: Demo user seeding is present but should be reviewed for consistency with the final user/profile model.
+- Status: Complete
+- Notes: `prisma/seed.ts` is idempotent (upserts on natural keys) and seeds 9 expense categories, 12 cities, and two demo users (`john@example.com`, `jane@example.com`, password `Password123!`) with profiles. Demo credentials are hashed with the same `hashPassword` helper used by registration, so seeded accounts can log in through `POST /api/v1/auth/login`.
 
 ### Split 0.4 — Cities API
 
