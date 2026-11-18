@@ -1,0 +1,35 @@
+info:
+  name: Create Blueprint With Same City
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseUrl}}api/v1/blueprints"
+  body:
+    type: json
+    data: |-
+      {
+        "originCityId": "{{originCityId}}",
+        "destinationCityId": "{{originCityId}}",
+        "expectedMonthlyIncome": 250000
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 400 status", function () {
+          expect(res.getStatus()).to.equal(400);
+        });
+
+        test("should reject a blueprint that starts and ends in the same city", function () {
+          expect(res.getBody().error.code).to.equal("VALIDATION_ERROR");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -100,7 +100,8 @@ In progress / incomplete:
 - Scope: unit and integration test setup
 - Dependencies: Split 0.6
 - Deliverables:
-  - Vitest configuration  - API integration tests for health, cities, auth, and authorization
+  - Vitest configuration
+  - API integration tests for health, cities, auth, authorization, and blueprints
 - CI workflow running lint, typecheck, tests, build
 - Status: Complete
 - Notes: Tests run without a database by mocking the Prisma client. Workflow lives in `.github/workflows/ci.yml`.
@@ -146,6 +147,8 @@ In progress / incomplete:
   - Origin city and destination city must differ
   - A blueprint belongs to exactly one authenticated user
   - A user can own multiple blueprints
+- Status: Complete
+- Notes: `GET/POST /api/v1/blueprints` and `GET/PATCH/PUT/DELETE /api/v1/blueprints/:id`, all behind `requireAuth`. Ownership is enforced inside the queries (`where: { id, userId }`), so another user's blueprint returns `404 BLUEPRINT_NOT_FOUND` rather than `403`. `expectedMonthlyIncome` is returned as a two-decimal string. Budgets and costs are out of scope here; they arrive with Splits 1.4–1.6.
 
 ### Split 1.4 — Budget and Expense Item Management
 
