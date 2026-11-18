@@ -1,0 +1,36 @@
+info:
+  name: Update User
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{baseUrl}}api/v1/users/{{userId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "updated.user.{{$randomInt}}@example.com"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 200 status", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should return the updated user", function () {
+          const body = res.getBody();
+
+          expect(body.id).to.equal(bru.getVar("userId"));
+          expect(body.email).to.include("updated.user.");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

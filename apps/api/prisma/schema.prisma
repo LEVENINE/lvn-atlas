@@ -40,10 +40,11 @@ enum TransportationPreference {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   profile    UserProfile?
   blueprints MigrationBlueprint[]
@@ -53,6 +54,8 @@ model User {
 model UserProfile {
   id                       String                    @id @default(uuid())
   userId                   String                    @unique
+  firstName                String
+  lastName                 String
   occupation               String?
   householdSize            Int                       @default(1)
   numberOfDependents       Int                       @default(0)
@@ -181,3 +184,4 @@ model JourneyExpenseItem {
   @@index([journeyId])
   @@index([categoryId])
 }
+

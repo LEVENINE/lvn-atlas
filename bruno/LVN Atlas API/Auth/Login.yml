@@ -1,0 +1,41 @@
+info:
+  name: Login
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}api/v1/auth/login"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "john@example.com",
+        "password": "Password123!"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 200 status", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should return a token for the demo user", function () {
+          const body = res.getBody();
+
+          expect(body.user.email).to.equal("john@example.com");
+          expect(body.accessToken).to.be.a("string");
+
+          bru.setVar("token", body.accessToken);
+          bru.setVar("userId", body.user.id);
+          bru.setVar("profileId", body.user.profile.id);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { env } from "../src/config/env.js";
 import { PrismaClient } from "../src/generated/prisma/client.js";
+import { hashPassword } from "../src/utils/password.js";
 
 const adapter = new PrismaPg({
   connectionString: env.DATABASE_URL,
@@ -23,6 +24,8 @@ const expenseCategories = [
   "Miscellaneous",
 ];
 
+const demoPassword = "Password123!";
+
 const cities = [
   { name: "Mumbai", state: "Maharashtra", country: "India" },
   { name: "Pune", state: "Maharashtra", country: "India" },
@@ -41,6 +44,7 @@ const cities = [
 async function main() {
   console.log("🌱 Seeding reference data...");
 
+  // Expense Categories
   for (const name of expenseCategories) {
     await prisma.expenseCategory.upsert({
       where: { name },
@@ -49,6 +53,7 @@ async function main() {
     });
   }
 
+  // Cities
   for (const city of cities) {
     await prisma.city.upsert({
       where: {
@@ -63,8 +68,71 @@ async function main() {
     });
   }
 
+  const passwordHash = await hashPassword(demoPassword);
+
+  // User: John
+  const john = await prisma.user.upsert({
+    where: {
+      email: "john@example.com",
+    },
+    update: {
+      passwordHash,
+    },
+    create: {
+      email: "john@example.com",
+      passwordHash,
+    },
+  });
+
+  await prisma.userProfile.upsert({
+    where: {
+      userId: john.id,
+    },
+    update: {},
+    create: {
+      firstName: "John",
+      lastName: "Doe",
+      user: {
+        connect: {
+          id: john.id,
+        },
+      },
+    },
+  });
+
+  // User: Jane
+  const jane = await prisma.user.upsert({
+    where: {
+      email: "jane@example.com",
+    },
+    update: {
+      passwordHash,
+    },
+    create: {
+      email: "jane@example.com",
+      passwordHash,
+    },
+  });
+
+  await prisma.userProfile.upsert({
+    where: {
+      userId: jane.id,
+    },
+    update: {},
+    create: {
+      firstName: "Jane",
+      lastName: "Smith",
+      user: {
+        connect: {
+          id: jane.id,
+        },
+      },
+    },
+  });
+
   console.log(`✅ Seeded ${expenseCategories.length} expense categories.`);
   console.log(`✅ Seeded ${cities.length} cities.`);
+  console.log(`✅ Seeded 2 users with the demo password: ${demoPassword}`);
 }
 
 main()

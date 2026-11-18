@@ -1,0 +1,27 @@
+info:
+  name: Delete Profile
+  type: http
+  seq: 6
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}api/v1/profiles/{{profileId}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 204 status", function () {
+          expect(res.getStatus()).to.equal(204);
+        });
+
+        test("should have an empty body", function () {
+          expect(res.getBody()).to.equal("");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
