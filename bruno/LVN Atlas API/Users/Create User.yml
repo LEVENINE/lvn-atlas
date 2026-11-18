@@ -1,0 +1,39 @@
+info:
+  name: Create User
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}api/v1/users"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "new.user.{{$randomInt}}@example.com"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 201 status", function () {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("should return the created user", function () {
+          const body = res.getBody();
+
+          expect(body.id).to.be.a("string");
+          expect(body.email).to.include("@example.com");
+          expect(body.profile).to.equal(null);
+
+          bru.setVar("userId", body.id);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

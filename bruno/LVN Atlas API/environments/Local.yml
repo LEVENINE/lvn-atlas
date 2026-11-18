@@ -2,3 +2,9 @@ name: Local
 variables:
   - name: baseUrl
     value: http://localhost:3000/
+  - name: userId
+    value: ""
+  - name: profileId
+    value: ""
+  - name: cityId
+    value: ""

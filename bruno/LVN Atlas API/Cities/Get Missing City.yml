@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: ""
+  url: "{{baseUrl}}api/v1/cities/00000000-0000-0000-0000-000000000000"
   auth: inherit
 
 settings:
