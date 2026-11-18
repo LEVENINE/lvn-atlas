@@ -174,20 +174,92 @@ The project emphasizes:
 
 # Repository Status
 
-🚧 **Product Discovery**
+✅ **Backend Foundation Implemented**
 
-The project is currently in the planning and system design phase.
+Product discovery, domain modelling, and the system architecture are documented in `docs/`, and the API foundation described in `docs/IMPLEMENTATION_PLAN.md` (Milestone 0, Splits 0.1–0.7) is implemented and covered by tests.
 
 Current focus:
 
-- Product Definition
-- User Research
-- Feature Planning
-- Database Design
-- System Architecture
-- API Design
+- Migration Blueprint management (Milestone 1)
+- Budgets, expense items, and the financial calculation engine
+- Atlas Score v1
 
-Backend implementation has not started yet.
+## Technology Stack
+
+| Layer | Choice |
+| --- | --- |
+| Language | TypeScript (Node.js 24) |
+| API | Express 5 |
+| Database | PostgreSQL 17 via Prisma 7 |
+| Validation | Zod 4 |
+| Authentication | JWT (HS256) with bcrypt password hashing |
+| Testing | Vitest + Supertest (Prisma client mocked, no database required) |
+| Tooling | pnpm workspaces, ESLint, Prettier, GitHub Actions |
+
+## Implemented API
+
+All routes are versioned under `/api/v1`.
+
+| Method | Route | Auth | Purpose |
+| --- | --- | --- | --- |
+| GET | `/health` | No | Service and database health check |
+| GET | `/cities` | No | List reference cities |
+| GET | `/cities/:id` | No | Get one reference city |
+| POST | `/auth/register` | No | Create an account, profile, and session token |
+| POST | `/auth/login` | No | Exchange credentials for an access token |
+| GET | `/auth/me` | Yes | Read the authenticated user and profile |
+| GET / PUT | `/users/:id` | Yes | Read or update your own user record |
+| GET / PUT | `/profiles/:id` | Yes | Read or update your own profile |
+| GET / POST | `/blueprints` | Yes | List your Migration Blueprints or create one |
+| GET / PATCH / DELETE | `/blueprints/:id` | Yes | Read, update, or delete one of your blueprints |
+
+The API enforces a single authorization rule: an authenticated user may only act on their own records. Full details are in `docs/architecture/04-api-overview.md` and `docs/architecture/05-authentication.md`.
+
+Not implemented yet: budgets and expense items, the financial calculation engine, Atlas Score, migration journeys, and blueprint comparison.
+
+## Local Development
+
+Prerequisites: Node.js 24+, pnpm 11+, and Docker (for the local PostgreSQL instance).
+
+```bash
+# 1. Install dependencies
+pnpm install
+
+# 2. Configure the API environment
+cp apps/api/.env.example apps/api/.env
+
+# 3. Start PostgreSQL
+docker compose up -d
+
+# 4. Apply migrations, generate the client, and seed reference data
+pnpm --filter @lvn/api exec prisma generate
+pnpm --filter @lvn/api exec prisma migrate deploy
+pnpm db:seed
+
+# 5. Run the API in watch mode (http://localhost:3000)
+pnpm dev
+```
+
+Register or log in through the API to obtain a bearer token, then use the requests in `bruno/LVN Atlas API/` (login, list cities, and create a blueprint in that order) to exercise the flow.
+
+### Required environment variables
+
+| Variable | Purpose |
+| --- | --- |
+| `PORT` | HTTP port (defaults to `3000`) |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `JWT_SECRET` | Signing secret for access tokens |
+| `JWT_EXPIRES_IN` | Optional token lifetime |
+| `LOG_LEVEL` | Optional log verbosity |
+
+## Quality Checks
+
+```bash
+pnpm check        # lint, typecheck, tests, format check, and build
+pnpm test         # Vitest suite, no database required
+```
+
+The same checks run in CI on every push and pull request via `.github/workflows/ci.yml`.
 
 ---
 

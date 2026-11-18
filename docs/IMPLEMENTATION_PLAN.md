@@ -1,6 +1,6 @@
 # LVN Atlas — Implementation Plan
 
-> Status: Planning  
+> Status: In development — backend foundation implemented
 > Source documents: `README.md`, `PRODUCT.md`, `DOMAIN_MODEL.md`, `ERD.md`, `MVP_FEATURES.md`, `USER_FLOW.md`, `USER_PERSONAS.md`, `USER_STORIES.md`, `docs/architecture/*`
 
 This document converts the product and domain documentation into an executable delivery plan.
@@ -20,15 +20,18 @@ Already in place:
 - MVP domain schema and migrations
 - Seed data for expense categories, cities, and demo users
 - Cities API: list and get by id
-- Users and profiles API: CRUD operations
-- Bruno collections for health, cities, users, and profiles
-- Code-quality scripts: lint, typecheck, format, build
+- Users and profiles API: read, update, and delete the authenticated user's own records
+- JWT authentication: register, login, current user, protected routes
+- Authorization: users can only access their own records
+- Migration Blueprint CRUD, scoped to the authenticated user
+- Bruno collections for health, cities, auth, users, profiles, and blueprints
+- Vitest API tests and a GitHub Actions CI workflow
+- Code-quality scripts: lint, typecheck, test, format, build
 
 In progress / incomplete:
 
-- Authentication is implemented; per-user authorization rules are not
-- Migration blueprints, budgets, journeys, and Atlas Score are not implemented
-- Automated tests and CI are not implemented
+- Budgets, expense items, journeys, and Atlas Score are not implemented
+- Integration tests run against a mocked Prisma client; no database is exercised in CI
 
 ---
 
@@ -47,7 +50,7 @@ In progress / incomplete:
 
 **Outcome:** A runnable, testable, documented backend base that later milestones can build on.
 
-**Status:** Mostly complete.
+**Status:** Splits 0.1–0.7 complete; Split 0.8 partial.
 
 ### Split 0.1 — Repository and Tooling
 
@@ -62,8 +65,8 @@ In progress / incomplete:
 ### Split 0.3 — Reference Data Seeding
 
 - Scope: expense categories, cities, demo users
-- Status: In progress
-- Notes: Demo user seeding is present but should be reviewed for consistency with the final user/profile model.
+- Status: Complete
+- Notes: `prisma/seed.ts` is idempotent (upserts on natural keys) and seeds 9 expense categories, 12 cities, and two demo users (`john@example.com`, `jane@example.com`, password `Password123!`) with profiles. Demo credentials are hashed with the same `hashPassword` helper used by registration, so seeded accounts can log in through `POST /api/v1/auth/login`.
 
 ### Split 0.4 — Cities API
 
@@ -91,7 +94,7 @@ In progress / incomplete:
   - password and token utilities
   - protected route support
 - Status: Complete
-- Notes: See `docs/architecture/05-authentication.md`. Per-user authorization is deferred.
+- Notes: See `docs/architecture/05-authentication.md`. Authorization limits every user to their own records; the collection and create endpoints were retired.
 
 ### Split 0.7 — Testing and CI Baseline
 
@@ -99,9 +102,10 @@ In progress / incomplete:
 - Dependencies: Split 0.6
 - Deliverables:
   - Vitest configuration
-  - API integration tests for health, cities, auth
-  - CI workflow running lint, typecheck, tests, build
-- Status: Not started
+  - API integration tests for health, cities, auth, authorization, and blueprints
+- CI workflow running lint, typecheck, tests, build
+- Status: Complete
+- Notes: Tests run without a database by mocking the Prisma client. Workflow lives in `.github/workflows/ci.yml`.
 
 ### Split 0.8 — API Documentation Baseline
 
@@ -125,6 +129,7 @@ In progress / incomplete:
   - A user can register with email and password
   - A user can log in and access protected endpoints
   - Passwords are never stored or returned in plain text
+- Notes: Delivered by Split 0.6.
 
 ### Split 1.2 — User Profile Management
 
@@ -133,6 +138,7 @@ In progress / incomplete:
 - Acceptance criteria:
   - Every user has exactly one profile
   - Profile data personalizes later blueprint generation
+- Notes: Profiles are created at registration and can only be read or updated by their owner; both were delivered by Splits 0.5 and 0.6.
 
 ### Split 1.3 — Migration Blueprint CRUD
 
@@ -142,6 +148,8 @@ In progress / incomplete:
   - Origin city and destination city must differ
   - A blueprint belongs to exactly one authenticated user
   - A user can own multiple blueprints
+- Status: Complete
+- Notes: `GET/POST /api/v1/blueprints` and `GET/PATCH/PUT/DELETE /api/v1/blueprints/:id`, all behind `requireAuth`. Ownership is enforced inside the queries (`where: { id, userId }`), so another user's blueprint returns `404 BLUEPRINT_NOT_FOUND` rather than `403`. `expectedMonthlyIncome` is returned as a two-decimal string. Budgets and costs are out of scope here; they arrive with Splits 1.4–1.6.
 
 ### Split 1.4 — Budget and Expense Item Management
 

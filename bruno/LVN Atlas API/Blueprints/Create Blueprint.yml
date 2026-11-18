@@ -1,0 +1,43 @@
+info:
+  name: Create Blueprint
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}api/v1/blueprints"
+  body:
+    type: json
+    data: |-
+      {
+        "originCityId": "{{originCityId}}",
+        "destinationCityId": "{{destinationCityId}}",
+        "expectedMonthlyIncome": 250000,
+        "relocatingHouseholdSize": 3
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 201 status", function () {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("should return the new blueprint with city details", function () {
+          const body = res.getBody();
+
+          expect(body.originCity.id).to.equal(bru.getVar("originCityId"));
+          expect(body.destinationCity.id).to.equal(bru.getVar("destinationCityId"));
+          expect(body.expectedMonthlyIncome).to.equal("250000.00");
+          expect(body.relocatingHouseholdSize).to.equal(3);
+
+          bru.setVar("blueprintId", body.id);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

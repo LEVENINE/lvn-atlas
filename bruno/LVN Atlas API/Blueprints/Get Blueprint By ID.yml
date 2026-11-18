@@ -1,0 +1,27 @@
+info:
+  name: Get Blueprint By ID
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{baseUrl}}api/v1/blueprints/{{blueprintId}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 200 status", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should return the requested blueprint", function () {
+          expect(res.getBody().id).to.equal(bru.getVar("blueprintId"));
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

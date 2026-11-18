@@ -8,6 +8,24 @@ http:
   url: "{{baseUrl}}api/v1/cities"
   auth: inherit
 
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 200 status", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should expose city ids for blueprint requests", function () {
+          const body = res.getBody();
+
+          expect(body).to.be.an("array");
+          expect(body.length).to.be.greaterThan(1);
+
+          bru.setVar("originCityId", body[0].id);
+          bru.setVar("destinationCityId", body[1].id);
+        });
+
 settings:
   encodeUrl: true
   timeout: 0

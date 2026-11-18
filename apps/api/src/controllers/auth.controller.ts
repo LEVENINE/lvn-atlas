@@ -2,18 +2,10 @@ import type { NextFunction, Request, Response } from "express";
 
 import { Prisma } from "../generated/prisma/client.js";
 import { authService } from "../services/auth.service.js";
-import type { AuthenticatedUser } from "../types/auth.js";
 import { AppError } from "../utils/app-error.js";
+import { requireAuthenticatedUser } from "../utils/authorization.js";
 import { parseBody } from "../utils/validation.js";
 import { loginSchema, registerSchema } from "../validators/auth.validator.js";
-
-function requireCurrentUser(req: Request): AuthenticatedUser {
-  if (!req.user) {
-    throw new AppError(401, "UNAUTHORIZED", "Authentication required");
-  }
-
-  return req.user;
-}
 
 export async function register(
   req: Request,
@@ -64,7 +56,7 @@ export async function getCurrentUser(
   next: NextFunction,
 ) {
   try {
-    const currentUser = requireCurrentUser(req);
+    const currentUser = requireAuthenticatedUser(req);
 
     const user = await authService.getCurrentUser(currentUser.id);
 

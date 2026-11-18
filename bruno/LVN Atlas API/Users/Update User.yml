@@ -1,7 +1,7 @@
 info:
   name: Update User
   type: http
-  seq: 5
+  seq: 4
 
 http:
   method: PUT
@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "email": "updated.user.{{$randomInt}}@example.com"
+        "email": "john@example.com"
       }
   auth: inherit
 
@@ -26,7 +26,7 @@ runtime:
           const body = res.getBody();
 
           expect(body.id).to.equal(bru.getVar("userId"));
-          expect(body.email).to.include("updated.user.");
+          expect(body.email).to.equal("john@example.com");
         });
 
 settings:

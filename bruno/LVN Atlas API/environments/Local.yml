@@ -10,3 +10,9 @@ variables:
     value: ""
   - name: cityId
     value: ""
+  - name: originCityId
+    value: ""
+  - name: destinationCityId
+    value: ""
+  - name: blueprintId
+    value: ""

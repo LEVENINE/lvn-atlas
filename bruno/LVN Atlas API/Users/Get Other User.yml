@@ -1,0 +1,30 @@
+info:
+  name: Get Other User
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{baseUrl}}api/v1/users/{{$guid}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 403 status", function () {
+          expect(res.getStatus()).to.equal(403);
+        });
+
+        test("should not reveal the record", function () {
+          const body = res.getBody();
+
+          expect(body.error.code).to.equal("FORBIDDEN");
+          expect(body.email).to.be.undefined;
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
