@@ -20,15 +20,17 @@ Already in place:
 - MVP domain schema and migrations
 - Seed data for expense categories, cities, and demo users
 - Cities API: list and get by id
-- Users and profiles API: CRUD operations
-- Bruno collections for health, cities, users, and profiles
-- Code-quality scripts: lint, typecheck, format, build
+- Users and profiles API: read, update, and delete the authenticated user's own records
+- JWT authentication: register, login, current user, protected routes
+- Authorization: users can only access their own records
+- Bruno collections for health, cities, auth, users, and profiles
+- Vitest API tests and a GitHub Actions CI workflow
+- Code-quality scripts: lint, typecheck, test, format, build
 
 In progress / incomplete:
 
-- Authentication is implemented; per-user authorization rules are not
 - Migration blueprints, budgets, journeys, and Atlas Score are not implemented
-- Automated tests and CI are not implemented
+- Integration tests run against a mocked Prisma client; no database is exercised in CI
 
 ---
 
@@ -91,17 +93,17 @@ In progress / incomplete:
   - password and token utilities
   - protected route support
 - Status: Complete
-- Notes: See `docs/architecture/05-authentication.md`. Per-user authorization is deferred.
+- Notes: See `docs/architecture/05-authentication.md`. Authorization limits every user to their own records; the collection and create endpoints were retired.
 
 ### Split 0.7 — Testing and CI Baseline
 
 - Scope: unit and integration test setup
 - Dependencies: Split 0.6
 - Deliverables:
-  - Vitest configuration
-  - API integration tests for health, cities, auth
-  - CI workflow running lint, typecheck, tests, build
-- Status: Not started
+  - Vitest configuration  - API integration tests for health, cities, auth, and authorization
+- CI workflow running lint, typecheck, tests, build
+- Status: Complete
+- Notes: Tests run without a database by mocking the Prisma client. Workflow lives in `.github/workflows/ci.yml`.
 
 ### Split 0.8 — API Documentation Baseline
 
@@ -125,6 +127,7 @@ In progress / incomplete:
   - A user can register with email and password
   - A user can log in and access protected endpoints
   - Passwords are never stored or returned in plain text
+- Notes: Delivered by Split 0.6.
 
 ### Split 1.2 — User Profile Management
 
@@ -133,6 +136,7 @@ In progress / incomplete:
 - Acceptance criteria:
   - Every user has exactly one profile
   - Profile data personalizes later blueprint generation
+- Notes: Profiles are created at registration and can only be read or updated by their owner; both were delivered by Splits 0.5 and 0.6.
 
 ### Split 1.3 — Migration Blueprint CRUD
 

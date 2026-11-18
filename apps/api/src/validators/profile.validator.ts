@@ -6,8 +6,7 @@ import {
   TransportationPreference,
 } from "../generated/prisma/enums.js";
 
-export const createProfileSchema = z.object({
-  userId: z.string().uuid(),
+const profileFieldsSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   occupation: z.string().optional(),
@@ -19,12 +18,10 @@ export const createProfileSchema = z.object({
   lifestylePreference: z.string().optional(),
 });
 
-export const updateProfileSchema = createProfileSchema
-  .omit({ userId: true })
+export const updateProfileSchema = profileFieldsSchema
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
     message: "At least one field must be provided",
   });
 
-export type CreateProfileInput = z.infer<typeof createProfileSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

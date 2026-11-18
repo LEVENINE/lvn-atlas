@@ -41,7 +41,7 @@ Passwords are hashed with bcrypt before they are stored.
 - the hash is never included in an API response
 - the password itself is never logged, stored, or returned
 
-`passwordHash` is nullable because accounts can exist without a password, such as demo and seeded users, or users created through the internal user endpoints. Such accounts cannot log in until a password is set.
+`passwordHash` is nullable because accounts can exist without a password, such as seeded and demo users. Such accounts cannot log in until a password is set.
 
 ---
 
@@ -146,13 +146,36 @@ Response `200 OK`:
 
 All user and profile endpoints require a valid access token:
 
-- `/api/v1/users`
-- `/api/v1/users/:id`
-- `/api/v1/users/:id/profile`
-- `/api/v1/profiles`
-- `/api/v1/profiles/:id`
+- `GET/PATCH/PUT/DELETE /api/v1/users/:id`
+- `GET /api/v1/users/:id/profile`
+- `GET/PATCH/PUT/DELETE /api/v1/profiles/:id`
 
 Cities and health endpoints remain public because they expose reference data only.
+
+---
+
+# Authorization
+
+Authentication proves who is calling. Authorization decides what they may touch.
+
+LVN Atlas currently supports exactly one role: an authenticated user acting on their own records.
+
+- `GET`, `PATCH`, and `DELETE` on `/api/v1/users/:id` succeed only when `:id` matches the token subject.
+- `GET /api/v1/users/:id/profile` succeeds only when `:id` matches the token subject.
+- Reading, updating, or deleting a profile succeeds only when the profile's `userId` matches the token subject.
+- Anything else returns `403 FORBIDDEN`.
+- Records are still checked for existence first, so a request for a profile that does not exist returns `404 PROFILE_NOT_FOUND` rather than revealing ownership.
+
+The collection endpoints and the standalone create endpoints were retired, because they contradict this rule:
+
+| Retired                        | Replacement                     |
+| ------------------------------ | ------------------------------- |
+| `GET /api/v1/users`            | `GET /api/v1/auth/me`           |
+| `GET /api/v1/profiles`         | `GET /api/v1/profiles/:id`      |
+| `POST /api/v1/users`           | `POST /api/v1/auth/register`    |
+| `POST /api/v1/profiles`        | `POST /api/v1/auth/register`    |
+
+Role-based access for administrative operations is deferred to Split 5.5.
 
 ---
 
@@ -163,6 +186,7 @@ Cities and health endpoints remain public because they expose reference data onl
 | 400    | `VALIDATION_ERROR`        | Request body failed validation              |
 | 401    | `INVALID_CREDENTIALS`     | Wrong email or password, or no password set |
 | 401    | `UNAUTHORIZED`            | Token missing, malformed, or expired        |
+| 403    | `FORBIDDEN`               | Authenticated, but not the record's owner   |
 | 409    | `USER_EMAIL_ALREADY_EXISTS` | Email is already registered               |
 
 Login responses never reveal whether an email exists. A missing account and a wrong password produce the same `INVALID_CREDENTIALS` error.
@@ -186,7 +210,6 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 # Deferred
 
-- Authorization rules that limit a user to their own records
 - Refresh tokens and logout
 - Password reset and email verification
 - Rate limiting on login attempts
