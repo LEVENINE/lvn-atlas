@@ -32,6 +32,17 @@ export type User = {
   profile: Profile | null;
 };
 
+export type AtlasScore = {
+  score: number;
+  band: "Strong" | "Promising" | "Tight" | "At risk";
+  factors: {
+    savingsRate: number;
+    expenseRatio: number;
+    housingCostRatio: number | null;
+    householdSize: number;
+  };
+};
+
 export type Blueprint = {
   id: string;
   userId: string;
@@ -46,6 +57,8 @@ export type Blueprint = {
   updatedAt: string;
   originCity: CitySummary;
   destinationCity: CitySummary;
+  /** Derived readiness estimate; never sent by the client. */
+  atlasScore: AtlasScore;
 };
 
 export type ExpenseCategory = {

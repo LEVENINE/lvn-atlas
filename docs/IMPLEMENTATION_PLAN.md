@@ -26,6 +26,7 @@ Already in place:
 - Migration Blueprint CRUD, scoped to the authenticated user
 - Blueprint budgets and expense items, with shared expense category reference data
 - Server-side budget summary: total expenses, expected savings, and disposable income derived from blueprint income and expense items
+- Atlas Score v1 on blueprint responses: a derived 0–100 readiness estimate with a band and factor breakdown
 - Bruno collections for health, cities, auth, users, profiles, and blueprints
 - Vitest API tests and a GitHub Actions CI workflow
 - Code-quality scripts: lint, typecheck, test, format, build
@@ -34,7 +35,7 @@ Already in place:
 
 In progress / incomplete:
 
-- The financial calculation engine, journeys, and Atlas Score are not implemented
+- Migration journeys and blueprints created from them are not implemented
 - The web client has no automated tests and no CI browser run yet
 - Integration tests run against a mocked Prisma client; no database is exercised in CI
 
@@ -200,6 +201,9 @@ In progress / incomplete:
 - Acceptance criteria:
   - Score is calculated, not user-entered
   - Score reflects income, expenses, savings, housing cost, household size, and available community data
+- Status: Complete
+- Notes: Blueprint responses (`GET/POST /api/v1/blueprints` and `GET/PATCH/PUT /api/v1/blueprints/:id`) include a derived `atlasScore: { score, band, factors }`. The score is a 0–100 integer heuristic: savings rate up to 45 points (full at 30% of income), expense burden up to 25 (full at half of income spent), housing cost up to 20 (from the `Rent` expense item; full at 25% of income, zero at 60%, half marks when no rent is recorded), and household size up to 10 (full at two people, minus two points per additional person). Bands are `Strong` (80+), `Promising` (60–79), `Tight` (40–59), and `At risk` (below 40); `factors` report the underlying ratios and household size. The score is recomputed on every blueprint response from income, household size, and the blueprint's budget, so no client input or stored column is involved. Community and journey data are not modelled yet, so they contribute nothing; the weights are documented in `docs/architecture/01-domain-model.md` for tuning.
+- Web client: the blueprint detail screen shows the score and band, and refreshes the blueprint after a budget save so the score reflects edited expenses.
 
 ### Split 1.7 — Blueprint Comparison and Dashboard Data
 

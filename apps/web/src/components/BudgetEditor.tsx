@@ -15,7 +15,13 @@ function amountsFromCategories(
   );
 }
 
-export function BudgetEditor({ blueprintId }: { blueprintId: string }) {
+export function BudgetEditor({
+  blueprintId,
+  onSaved,
+}: {
+  blueprintId: string;
+  onSaved?: () => void;
+}) {
   const [categories, setCategories] = useState<ExpenseCategory[] | null>(null);
   const [amounts, setAmounts] = useState<Amounts>({});
   const [savedAmounts, setSavedAmounts] = useState<Amounts>({});
@@ -111,6 +117,7 @@ export function BudgetEditor({ blueprintId }: { blueprintId: string }) {
       setAmounts(nextAmounts);
       setSavedAmounts(nextAmounts);
       setSaved(true);
+      onSaved?.();
     } catch (saveFailure) {
       setSaveError(errorMessage(saveFailure));
     } finally {

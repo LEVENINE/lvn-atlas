@@ -180,61 +180,63 @@ Product discovery, domain modelling, and the system architecture are documented 
 
 Current focus:
 
-- Atlas Score v1
+- Blueprint comparison and dashboard data
 
 ## Technology Stack
 
-| Layer | Choice |
-| --- | --- |
-| Language | TypeScript (Node.js 24) |
-| API | Express 5 |
-| Database | PostgreSQL 17 via Prisma 7 |
-| Validation | Zod 4 |
-| Authentication | JWT (HS256) with bcrypt password hashing |
-| Web client | React 19, Vite, React Router, Tailwind CSS v4 |
-| Testing | Vitest + Supertest (Prisma client mocked, no database required) |
-| Tooling | pnpm workspaces, ESLint, Prettier, GitHub Actions |
+| Layer          | Choice                                                          |
+| -------------- | --------------------------------------------------------------- |
+| Language       | TypeScript (Node.js 24)                                         |
+| API            | Express 5                                                       |
+| Database       | PostgreSQL 17 via Prisma 7                                      |
+| Validation     | Zod 4                                                           |
+| Authentication | JWT (HS256) with bcrypt password hashing                        |
+| Web client     | React 19, Vite, React Router, Tailwind CSS v4                   |
+| Testing        | Vitest + Supertest (Prisma client mocked, no database required) |
+| Tooling        | pnpm workspaces, ESLint, Prettier, GitHub Actions               |
 
 ## Implemented API
 
 All routes are versioned under `/api/v1`.
 
-| Method | Route | Auth | Purpose |
-| --- | --- | --- | --- |
-| GET | `/api/v1` | No | Service and database health check |
-| GET | `/cities` | No | List reference cities |
-| GET | `/cities/:id` | No | Get one reference city |
-| POST | `/auth/register` | No | Create an account, profile, and session token |
-| POST | `/auth/login` | No | Exchange credentials for an access token |
-| GET | `/auth/me` | Yes | Read the authenticated user and profile |
-| GET / PUT | `/users/:id` | Yes | Read or update your own user record |
-| GET / PUT | `/profiles/:id` | Yes | Read or update your own profile |
-| GET / POST | `/blueprints` | Yes | List your Migration Blueprints or create one |
-| GET / PATCH / DELETE | `/blueprints/:id` | Yes | Read, update, or delete one of your blueprints |
-| GET | `/expense-categories` | No | List the shared expense categories |
-| GET / PUT | `/blueprints/:id/budget` | Yes | Read a blueprint's budget and derived summary, or replace its expense items |
+| Method               | Route                    | Auth | Purpose                                                                     |
+| -------------------- | ------------------------ | ---- | --------------------------------------------------------------------------- |
+| GET                  | `/api/v1`                | No   | Service and database health check                                           |
+| GET                  | `/cities`                | No   | List reference cities                                                       |
+| GET                  | `/cities/:id`            | No   | Get one reference city                                                      |
+| POST                 | `/auth/register`         | No   | Create an account, profile, and session token                               |
+| POST                 | `/auth/login`            | No   | Exchange credentials for an access token                                    |
+| GET                  | `/auth/me`               | Yes  | Read the authenticated user and profile                                     |
+| GET / PUT            | `/users/:id`             | Yes  | Read or update your own user record                                         |
+| GET / PUT            | `/profiles/:id`          | Yes  | Read or update your own profile                                             |
+| GET / POST           | `/blueprints`            | Yes  | List your Migration Blueprints (with Atlas Scores) or create one            |
+| GET / PATCH / DELETE | `/blueprints/:id`        | Yes  | Read, update, or delete one of your blueprints                              |
+| GET                  | `/expense-categories`    | No   | List the shared expense categories                                          |
+| GET / PUT            | `/blueprints/:id/budget` | Yes  | Read a blueprint's budget and derived summary, or replace its expense items |
 
 A blueprint's budget is created with the blueprint. `PUT /blueprints/:id/budget` treats the submitted expense items as the complete set: amounts for omitted categories are removed, and expense amounts are returned as two-decimal strings.
+
+Blueprint responses include a derived `atlasScore`: an integer `score` from 0 to 100, a `band` (`Strong`, `Promising`, `Tight`, or `At risk`), and the `factors` behind them (savings rate, expense ratio, housing cost ratio, household size). The score is recomputed from income, household size, and the blueprint's budget on every response, so it is never stored or accepted from the client. v1 weights give up to 45 points for savings rate, 25 for expense burden, 20 for housing cost (the `Rent` expense item, with half marks when rent is not recorded), and 10 for household size; community and journey data do not feed the score yet.
 
 Budget responses also carry a `summary` computed server-side from the blueprint's income and expense items: `expectedMonthlyIncome`, `totalExpenses`, `expectedSavings`, and `disposableIncome`, all as two-decimal strings. Savings can be negative when expenses exceed income. Expense categories are not yet classified as essential or discretionary, so every expense currently counts as essential and `disposableIncome` equals `expectedSavings`.
 
 The API enforces a single authorization rule: an authenticated user may only act on their own records. Full details are in `docs/architecture/04-api-overview.md` and `docs/architecture/05-authentication.md`.
 
-Not implemented yet: Atlas Score, migration journeys, and blueprint comparison.
+Not implemented yet: migration journeys, blueprint comparison, and the recommendation features built on them.
 
 ## Web Application
 
 `apps/web` is a single-page React client served as static files. It covers what the API exposes today:
 
-| Screen | Route |
-| --- | --- |
-| Sign in | `/login` |
-| Create account | `/register` |
-| Blueprint dashboard | `/` |
-| Create a blueprint | `/blueprints/new` |
+| Screen                                       | Route             |
+| -------------------------------------------- | ----------------- |
+| Sign in                                      | `/login`          |
+| Create account                               | `/register`       |
+| Blueprint dashboard                          | `/`               |
+| Create a blueprint                           | `/blueprints/new` |
 | Blueprint detail, budget editing, and delete | `/blueprints/:id` |
 
-The blueprint detail screen edits the monthly budget: every expense category is an amount field, a running total updates as you type, and saving replaces the blueprint's expense items (a cleared category is removed). The API returns server-computed totals and savings in the budget summary; the detail screen still sums the amounts locally for its running total while editing, and the Atlas Score comes later. Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
+The blueprint detail screen edits the monthly budget: every expense category is an amount field, a running total updates as you type, and saving replaces the blueprint's expense items (a cleared category is removed). The API returns server-computed totals and savings in the budget summary; the detail screen still sums the amounts locally for its running total while editing. It also shows the blueprint's Atlas Score and refreshes it after a budget save. Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
 
 ## Local Development
 
@@ -267,21 +269,21 @@ The same flow can be exercised without the UI using the requests in `bruno/LVN A
 
 API (`apps/api/.env`, see `apps/api/.env.example`):
 
-| Variable | Purpose |
-| --- | --- |
-| `PORT` | HTTP port (defaults to `3000`) |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `JWT_SECRET` | Signing secret for access tokens |
-| `JWT_EXPIRES_IN` | Optional token lifetime |
-| `LOG_LEVEL` | Optional log verbosity |
-| `CORS_ORIGIN` | Allowed browser origin(s), comma-separated (defaults to `http://localhost:5173`) |
+| Variable         | Purpose                                                                          |
+| ---------------- | -------------------------------------------------------------------------------- |
+| `PORT`           | HTTP port (defaults to `3000`)                                                   |
+| `DATABASE_URL`   | PostgreSQL connection string                                                     |
+| `JWT_SECRET`     | Signing secret for access tokens                                                 |
+| `JWT_EXPIRES_IN` | Optional token lifetime                                                          |
+| `LOG_LEVEL`      | Optional log verbosity                                                           |
+| `CORS_ORIGIN`    | Allowed browser origin(s), comma-separated (defaults to `http://localhost:5173`) |
 
 Web client (build time):
 
-| Variable | Purpose |
-| --- | --- |
-| `VITE_API_BASE_URL` | Absolute API origin for deployed builds, e.g. `https://api.example.com`. Leave unset in development. |
-| `VITE_API_PROXY_TARGET` | Optional dev proxy target (defaults to `http://localhost:3000`) |
+| Variable                | Purpose                                                                                              |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| `VITE_API_BASE_URL`     | Absolute API origin for deployed builds, e.g. `https://api.example.com`. Leave unset in development. |
+| `VITE_API_PROXY_TARGET` | Optional dev proxy target (defaults to `http://localhost:3000`)                                      |
 
 ## Hosting the Web Client
 

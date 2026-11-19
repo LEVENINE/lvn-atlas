@@ -4,6 +4,10 @@ import type {
   CreateBlueprintInput,
   UpdateBlueprintInput,
 } from "../validators/blueprint.validator.js";
+import {
+  calculateAtlasScore,
+  HOUSING_CATEGORY_NAME,
+} from "./atlas-score.service.js";
 
 const citySelect = {
   id: true,
@@ -15,6 +19,15 @@ const citySelect = {
 const blueprintInclude = {
   originCity: { select: citySelect },
   destinationCity: { select: citySelect },
+  budget: {
+    include: {
+      expenseItems: {
+        include: {
+          category: { select: { id: true, name: true } },
+        },
+      },
+    },
+  },
 } satisfies Prisma.MigrationBlueprintInclude;
 
 type BlueprintWithCities = Prisma.MigrationBlueprintGetPayload<{
@@ -22,9 +35,24 @@ type BlueprintWithCities = Prisma.MigrationBlueprintGetPayload<{
 }>;
 
 function serialize(blueprint: BlueprintWithCities) {
+  // The budget feeds the Atlas Score, but blueprint responses keep exposing
+  // only blueprint fields; budgets have their own endpoint.
+  const { budget, ...rest } = blueprint;
+  const expenseItems = budget?.expenseItems ?? [];
+  const housingItem = expenseItems.find(
+    (item) =>
+      item.category.name.toLowerCase() === HOUSING_CATEGORY_NAME.toLowerCase(),
+  );
+
   return {
-    ...blueprint,
-    expectedMonthlyIncome: blueprint.expectedMonthlyIncome.toFixed(2),
+    ...rest,
+    expectedMonthlyIncome: rest.expectedMonthlyIncome.toFixed(2),
+    atlasScore: calculateAtlasScore({
+      expectedMonthlyIncome: rest.expectedMonthlyIncome,
+      expenseAmounts: expenseItems.map((item) => item.amount),
+      housingAmount: housingItem?.amount ?? null,
+      householdSize: rest.relocatingHouseholdSize,
+    }),
   };
 }
 
