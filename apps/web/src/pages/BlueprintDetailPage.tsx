@@ -20,6 +20,7 @@ export function BlueprintDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -47,6 +48,17 @@ export function BlueprintDetailPage() {
       active = false;
     };
   }, [id]);
+
+  async function handleBudgetSaved() {
+    setRefreshError(null);
+
+    try {
+      const blueprint = await api.blueprint(id);
+      setState({ status: "ready", blueprint });
+    } catch (refreshFailure) {
+      setRefreshError(errorMessage(refreshFailure));
+    }
+  }
 
   async function handleDelete() {
     setDeleting(true);
@@ -88,6 +100,8 @@ export function BlueprintDetailPage() {
       {state.status === "ready" && (
         <>
           <section className="card flex flex-col gap-8 p-6 sm:p-8">
+            {refreshError && <Notice>{refreshError}</Notice>}
+
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="eyebrow">Migration blueprint</p>
@@ -124,10 +138,17 @@ export function BlueprintDetailPage() {
                 label="Last updated"
                 value={formatDate(state.blueprint.updatedAt)}
               />
+              <Fact
+                label="Atlas Score"
+                value={`${state.blueprint.atlasScore.score} / 100 · ${state.blueprint.atlasScore.band}`}
+              />
             </dl>
           </section>
 
-          <BudgetEditor blueprintId={state.blueprint.id} />
+          <BudgetEditor
+            blueprintId={state.blueprint.id}
+            onSaved={handleBudgetSaved}
+          />
 
           <section className="flex flex-col gap-4">
             {deleteError && <Notice>{deleteError}</Notice>}

@@ -20,6 +20,16 @@ runtime:
           expect(res.getBody().id).to.equal(bru.getVar("blueprintId"));
         });
 
+        test("should include a derived atlas score", function () {
+          const score = res.getBody().atlasScore;
+
+          expect(score.score).to.be.a("number");
+          expect(score.score).to.be.within(0, 100);
+          expect(score.band).to.be.a("string");
+          expect(score.factors).to.be.an("object");
+          expect(score.factors.householdSize).to.be.a("number");
+        });
+
 settings:
   encodeUrl: true
   timeout: 0

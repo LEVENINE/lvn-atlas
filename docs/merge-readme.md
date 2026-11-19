@@ -1,60 +1,72 @@
-# Merge README — Financial calculation engine (Split 1.5)
+# Merge README — Atlas Score v1 (Split 1.6)
 
-Branch: `feature/financial-calculation-engine`
-Base: `main` at `f913872`
+Branch: `feature/atlas-score`
+Base: `main` at `bf69840`
 
 ## Summary
 
-Budget figures are now derived server-side. Every budget read and replace returns a
-`summary` computed from the blueprint's expected monthly income and its expense items, so
-clients never calculate or submit totals themselves.
+Blueprint responses now include a server-computed `atlasScore`: a 0–100 readiness
+estimate with a band and the factor breakdown behind it. It is derived from the
+blueprint's income, household size, and budget on every response — never stored and
+never accepted from the client.
 
 ## What changed
 
-| Area | Change |
-| --- | --- |
-| `apps/api/src/services/financial.service.ts` | New pure calculation module: decimal sum of expenses plus `summarizeBudget`. |
-| `apps/api/src/services/budget.service.ts` | Budget serialization takes the blueprint income and attaches the summary. |
-| `apps/api/src/controllers/budget.controller.ts` | Passes the owned blueprint's income into budget reads and replaces. |
-| `apps/api/tests/financial.test.ts` | Unit tests for sums, zero expenses, derived savings, negative savings, and formatting. |
-| `apps/api/tests/budgets.test.ts` | Endpoint tests assert the summary on read, on replace, and after clearing a budget. |
-| `bruno/LVN Atlas API/Budgets/*.yml` | Request tests assert the summary fields and recalculation. |
-| `README.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/architecture/01-domain-model.md` | Document the summary, its formulas, and the disposable-income caveat. |
+| Area                                                                               | Change                                                                                         |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `apps/api/src/services/atlas-score.service.ts`                                     | New pure scoring module with documented weights, bands, and factors.                           |
+| `apps/api/src/services/blueprint.service.ts`                                       | Blueprint queries load the budget, compute the score, and keep the budget out of the response. |
+| `apps/api/tests/atlas-score.test.ts`                                               | Unit tests for full marks, tight band, overspending, missing rent, and household penalty.      |
+| `apps/api/tests/blueprints.test.ts`                                                | Endpoint test proves the score is returned and the budget is not leaked.                       |
+| `apps/web/src/lib/api.ts`                                                          | `AtlasScore` type on `Blueprint`.                                                              |
+| `apps/web/src/pages/BlueprintDetailPage.tsx`                                       | Shows the score and band; refreshes the blueprint after a budget save.                         |
+| `apps/web/src/components/BudgetEditor.tsx`                                         | Optional `onSaved` callback so the parent can refresh derived values.                          |
+| `bruno/LVN Atlas API/Blueprints/*.yml`                                             | Request tests assert the score shape on list and detail.                                       |
+| `README.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/architecture/01-domain-model.md` | Document the score, its formula, and Split 1.6 status.                                         |
 
-## API behavior
+## Formula
 
-Both `GET /api/v1/blueprints/:id/budget` and `PUT /api/v1/blueprints/:id/budget` now
-include:
+| Factor             | Points | Full marks            | Zero marks                                |
+| ------------------ | ------ | --------------------- | ----------------------------------------- |
+| Savings rate       | 45     | 30% of income saved   | No savings or overspending                |
+| Expense burden     | 25     | 50% of income spent   | 100% of income spent                      |
+| Housing cost ratio | 20     | 25% of income on rent | 60% of income on rent                     |
+| Household size     | 10     | Two people or fewer   | Six or more (two points per extra person) |
+
+- Housing uses the `Rent` expense category; with no rent recorded it earns half marks.
+- Bands: `Strong` 80–100, `Promising` 60–79, `Tight` 40–59, `At risk` 0–39.
+- Community and migration journey data are not modelled yet and do not contribute.
+
+Response shape:
 
 ```json
-"summary": {
-  "expectedMonthlyIncome": "250000.00",
-  "totalExpenses": "37000.00",
-  "expectedSavings": "213000.00",
-  "disposableIncome": "213000.00"
+"atlasScore": {
+  "score": 84,
+  "band": "Strong",
+  "factors": {
+    "savingsRate": 0.5,
+    "expenseRatio": 0.5,
+    "housingCostRatio": 0.5,
+    "householdSize": 3
+  }
 }
 ```
 
-- `totalExpenses` is the decimal sum of the returned expense items.
-- `expectedSavings` is income minus expenses and can be negative.
-- `disposableIncome` equals `expectedSavings` until categories are classified as essential
-  or discretionary.
-- Values are two-decimal strings; no derived value is accepted from the client.
-
 ## Out of scope
 
-- The web client still shows its own running total while editing and does not render the
-  summary yet.
-- Atlas Score v1 (Split 1.6) will consume this summary.
+- Comparison-oriented dashboard data (Split 1.7).
+- Journey and community factors in the score.
+- Storing score history.
 
 ## Verification
 
 - `pnpm check` on the branch (see results in the PR).
-- `pnpm --filter @lvn/api test`: 62 tests in 8 files passed, including the new financial
-  and endpoint assertions.
-- Not verified: Bruno collection run against a live database in this session.
+- Live check against Postgres: a temporary blueprint scored 88 with no expenses, then 84
+  after adding ₹60,000 rent; the blueprint was deleted afterward.
+- Not verified: the Bruno collection run against a live database.
 
 ## Merge notes
 
 - No migrations, environment variables, or dependency changes.
-- Merge commit title: `Merge pull request #18 from LEVENINE/feature/financial-calculation-engine`
+- Client input for the score is rejected implicitly: the field is never read from requests.
+- Merge commit title follows the PR title.

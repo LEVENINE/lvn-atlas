@@ -25,6 +25,19 @@ runtime:
           })).to.equal(true);
         });
 
+        test("should include an atlas score for every blueprint", function () {
+          const body = res.getBody();
+
+          expect(
+            body.every(function (blueprint) {
+              return (
+                blueprint.atlasScore &&
+                typeof blueprint.atlasScore.score === "number"
+              );
+            }),
+          ).to.equal(true);
+        });
+
 settings:
   encodeUrl: true
   timeout: 0

@@ -45,6 +45,8 @@ const pune = {
 
 const blueprintId = "88888888-8888-4888-8888-888888888888";
 
+const rentCategoryId = "99999999-9999-4999-8999-999999999999";
+
 const blueprint = {
   id: blueprintId,
   userId: currentUser.id,
@@ -58,6 +60,27 @@ const blueprint = {
   updatedAt: new Date("2026-02-01T00:00:00.000Z"),
   originCity: mumbai,
   destinationCity: pune,
+};
+
+const budgetedBlueprint = {
+  ...blueprint,
+  budget: {
+    id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    blueprintId,
+    createdAt: new Date("2026-02-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-02-01T00:00:00.000Z"),
+    expenseItems: [
+      {
+        id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        budgetId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        categoryId: rentCategoryId,
+        amount: new Prisma.Decimal("25000.00"),
+        createdAt: new Date("2026-02-01T00:00:00.000Z"),
+        updatedAt: new Date("2026-02-01T00:00:00.000Z"),
+        category: { id: rentCategoryId, name: "Rent" },
+      },
+    ],
+  },
 };
 
 function authorized(method: "get" | "post" | "patch" | "delete", url: string) {
@@ -171,6 +194,30 @@ describe("blueprints endpoints", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.destinationCity.name).toBe("Pune");
+  });
+
+  it("returns the derived atlas score without exposing the budget", async () => {
+    prismaMock.migrationBlueprint.findFirst.mockResolvedValue(
+      budgetedBlueprint,
+    );
+
+    const response = await authorized(
+      "get",
+      `/api/v1/blueprints/${blueprintId}`,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.atlasScore).toEqual({
+      score: 100,
+      band: "Strong",
+      factors: {
+        savingsRate: 0.9,
+        expenseRatio: 0.1,
+        housingCostRatio: 0.1,
+        householdSize: 2,
+      },
+    });
+    expect(response.body.budget).toBeUndefined();
   });
 
   it("updates a blueprint the user owns", async () => {
