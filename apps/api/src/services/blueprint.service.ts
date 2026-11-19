@@ -60,6 +60,9 @@ export const blueprintService = {
       data: {
         userId,
         ...data,
+        budget: {
+          create: {},
+        },
       },
       include: blueprintInclude,
     });

@@ -1,0 +1,48 @@
+info:
+  name: Replace Budget
+  type: http
+  seq: 3
+
+http:
+  method: PUT
+  url: "{{baseUrl}}api/v1/blueprints/{{blueprintId}}/budget"
+  body:
+    type: json
+    data: |-
+      {
+        "expenseItems": [
+          { "categoryId": "{{rentCategoryId}}", "amount": 25000 },
+          { "categoryId": "{{groceriesCategoryId}}", "amount": 12000 }
+        ]
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 200 status", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("should return the replaced expense items", function () {
+          const body = res.getBody();
+
+          expect(body.expenseItems).to.have.lengthOf(2);
+
+          const rent = body.expenseItems.find(
+            (item) => item.category.name === "Rent",
+          );
+          const groceries = body.expenseItems.find(
+            (item) => item.category.name === "Groceries",
+          );
+
+          expect(rent.amount).to.equal("25000.00");
+          expect(groceries.amount).to.equal("12000.00");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

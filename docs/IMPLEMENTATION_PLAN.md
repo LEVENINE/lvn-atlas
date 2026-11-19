@@ -24,6 +24,7 @@ Already in place:
 - JWT authentication: register, login, current user, protected routes
 - Authorization: users can only access their own records
 - Migration Blueprint CRUD, scoped to the authenticated user
+- Blueprint budgets and expense items, with shared expense category reference data
 - Bruno collections for health, cities, auth, users, profiles, and blueprints
 - Vitest API tests and a GitHub Actions CI workflow
 - Code-quality scripts: lint, typecheck, test, format, build
@@ -31,7 +32,7 @@ Already in place:
 
 In progress / incomplete:
 
-- Budgets, expense items, journeys, and Atlas Score are not implemented
+- The financial calculation engine, journeys, and Atlas Score are not implemented
 - The web client has no automated tests and no CI browser run yet
 - Integration tests run against a mocked Prisma client; no database is exercised in CI
 
@@ -173,6 +174,8 @@ In progress / incomplete:
   - Every blueprint owns exactly one budget
   - Expense items belong to shared expense categories
   - Expense amounts can be customized by the user
+- Status: Complete
+- Notes: `GET/PUT /api/v1/blueprints/:id/budget` and `GET /api/v1/expense-categories`, all behind `requireAuth` except the public category list. A budget row is created with its blueprint; reads also create one for blueprints that predate budgets. `PUT` replaces the complete expense item set (omitted categories are removed), rejects duplicate categories, and returns amounts as two-decimal strings. Unknown categories return `404 EXPENSE_CATEGORY_NOT_FOUND`. Totals and other derived values arrive with Split 1.5.
 
 ### Split 1.5 — Financial Calculation Engine
 

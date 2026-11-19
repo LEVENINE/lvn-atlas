@@ -180,8 +180,8 @@ Product discovery, domain modelling, and the system architecture are documented 
 
 Current focus:
 
-- Migration Blueprint management (Milestone 1)
-- Budgets, expense items, and the financial calculation engine
+- Budget editing in the web client
+- The financial calculation engine
 - Atlas Score v1
 
 ## Technology Stack
@@ -213,10 +213,14 @@ All routes are versioned under `/api/v1`.
 | GET / PUT | `/profiles/:id` | Yes | Read or update your own profile |
 | GET / POST | `/blueprints` | Yes | List your Migration Blueprints or create one |
 | GET / PATCH / DELETE | `/blueprints/:id` | Yes | Read, update, or delete one of your blueprints |
+| GET | `/expense-categories` | No | List the shared expense categories |
+| GET / PUT | `/blueprints/:id/budget` | Yes | Read a blueprint's budget or replace its expense items |
+
+A blueprint's budget is created with the blueprint. `PUT /blueprints/:id/budget` treats the submitted expense items as the complete set: amounts for omitted categories are removed, and expense amounts are returned as two-decimal strings.
 
 The API enforces a single authorization rule: an authenticated user may only act on their own records. Full details are in `docs/architecture/04-api-overview.md` and `docs/architecture/05-authentication.md`.
 
-Not implemented yet: budgets and expense items, the financial calculation engine, Atlas Score, migration journeys, and blueprint comparison.
+Not implemented yet: the financial calculation engine, Atlas Score, migration journeys, and blueprint comparison.
 
 ## Web Application
 
@@ -230,7 +234,7 @@ Not implemented yet: budgets and expense items, the financial calculation engine
 | Create a blueprint | `/blueprints/new` |
 | Blueprint detail and delete | `/blueprints/:id` |
 
-Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
+Blueprint budgets are exposed by the API but cannot be edited in the web client yet. Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
 
 ## Local Development
 
@@ -257,7 +261,7 @@ pnpm dev
 
 Open http://localhost:5173 and sign in with the seeded demo account `john@example.com` / `Password123!`, or create your own account. The Vite dev server proxies `/api` to the API, so no CORS configuration is needed locally.
 
-The same flow can be exercised without the UI using the requests in `bruno/LVN Atlas API/` (login, list cities, then create a blueprint).
+The same flow can be exercised without the UI using the requests in `bruno/LVN Atlas API/` (login, list cities, create a blueprint, then replace its budget).
 
 ### Environment variables
 
