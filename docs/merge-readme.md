@@ -17,8 +17,9 @@ edits the blueprint's monthly budget directly.
 | `apps/web/src/lib/api.ts`                    | Added `ExpenseCategory`, budget expense item, and `Budget` types, plus `expenseCategories()`, `budget(blueprintId)`, and `replaceBudget(blueprintId, items)`. |
 | `apps/web/src/components/BudgetEditor.tsx`   | New editor: loads categories and the saved budget together, one amount field per category, running monthly total, save through the replace-budget endpoint.   |
 | `apps/web/src/pages/BlueprintDetailPage.tsx` | Replaced the "What this plan does not have yet" placeholder with the editor.                                                                                  |
-| `apps/web/src/pages/NewBlueprintPage.tsx`    | Removed the "once budgeting ships" copy.                                                                                                                      |
-| `README.md`                                  | Detail screen listed as "Blueprint detail, budget editing, and delete"; budget paragraph rewritten; status focus updated.                                     |
+| `apps/web/src/pages/NewBlueprintPage.tsx`    | Removed the "once budgeting ships" copy.                                                                                                                      |     | `README.md` | Detail screen listed as "Blueprint detail, budget editing, and delete"; budget paragraph rewritten; status focus updated. |
+| `docs/IMPLEMENTATION_PLAN.md`                | Repository status and Split 1.4 notes now cover web budget editing; Delivery Rules state the README update, merge README, and `pnpm check` gate.              |
+| `docs/merge-readme.md`                       | This file, regenerated per merge.                                                                                                                             |
 
 ## Behavior
 
