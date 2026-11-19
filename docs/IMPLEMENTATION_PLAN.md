@@ -27,10 +27,12 @@ Already in place:
 - Bruno collections for health, cities, auth, users, profiles, and blueprints
 - Vitest API tests and a GitHub Actions CI workflow
 - Code-quality scripts: lint, typecheck, test, format, build
+- Web application (`apps/web`) with sign in, registration, blueprint dashboard, and blueprint creation/detail screens
 
 In progress / incomplete:
 
 - Budgets, expense items, journeys, and Atlas Score are not implemented
+- The web client has no automated tests and no CI browser run yet
 - Integration tests run against a mocked Prisma client; no database is exercised in CI
 
 ---
@@ -50,7 +52,7 @@ In progress / incomplete:
 
 **Outcome:** A runnable, testable, documented backend base that later milestones can build on.
 
-**Status:** Splits 0.1–0.7 complete; Split 0.8 partial.
+**Status:** Splits 0.1–0.7 and 0.9 complete; Split 0.8 partial.
 
 ### Split 0.1 — Repository and Tooling
 
@@ -112,6 +114,18 @@ In progress / incomplete:
 - Scope: complete Bruno collection and document API conventions
 - Dependencies: Split 0.5, Split 0.6
 - Status: Partial
+
+### Split 0.9 — Web Application Foundation
+
+- Scope: browser client for the existing API: authentication, blueprint dashboard, blueprint creation and detail
+- Dependencies: Split 1.3
+- Deliverables:
+  - Vite + React + TypeScript workspace package with shared lint, format, typecheck, and build scripts
+  - API client with typed responses, token handling, and error mapping
+  - Sign in, registration, dashboard, blueprint creation, and blueprint detail screens
+  - CORS support in the API for the deployed web origin
+- Status: Complete
+- Notes: See `docs/architecture/07-web-application.md`. The token is stored in `localStorage`, which is an MVP trade-off to revisit before sensitive data is served. Static build only; no server-side rendering.
 
 ---
 

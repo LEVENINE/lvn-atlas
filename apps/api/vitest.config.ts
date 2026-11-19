@@ -11,6 +11,7 @@ export default defineConfig({
       LOG_LEVEL: "silent",
       DATABASE_URL: "postgresql://lvn:lvn@localhost:5432/lvn_atlas_test",
       JWT_SECRET: "test-jwt-secret-value-that-is-at-least-32-characters",
+      CORS_ORIGIN: "http://localhost:5173",
     },
   },
 });

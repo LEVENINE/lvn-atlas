@@ -5,12 +5,14 @@ import blueprintRouter from "./routes/blueprint.routes.js";
 import cityRouter from "./routes/city.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import userRouter from "./routes/user.routes.js";
+import { corsMiddleware } from "./middleware/cors.middleware.js";
 import { errorHandler } from "./middleware/error-handler.middleware.js";
 import { notFoundHandler } from "./middleware/not-found.middleware.js";
 import apiRouter from "./routes/index.routes.js";
 
 const app = express();
 
+app.use(corsMiddleware);
 app.use(express.json());
 
 // API routes
