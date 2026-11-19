@@ -48,6 +48,37 @@ export type Blueprint = {
   destinationCity: CitySummary;
 };
 
+export type ExpenseCategory = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BudgetExpenseItem = {
+  id: string;
+  budgetId: string;
+  categoryId: string;
+  /** Two-decimal string as returned by the API, e.g. "25000.00". */
+  amount: string;
+  createdAt: string;
+  updatedAt: string;
+  category: Pick<ExpenseCategory, "id" | "name">;
+};
+
+export type Budget = {
+  id: string;
+  blueprintId: string;
+  createdAt: string;
+  updatedAt: string;
+  expenseItems: BudgetExpenseItem[];
+};
+
+export type ExpenseItemInput = {
+  categoryId: string;
+  amount: number;
+};
+
 export type AuthResponse = {
   user: User;
   accessToken: string;
@@ -178,6 +209,17 @@ export const api = {
 
   deleteBlueprint: (id: string) =>
     request<void>(`/blueprints/${id}`, { method: "DELETE" }),
+
+  expenseCategories: () => request<ExpenseCategory[]>("/expense-categories"),
+
+  budget: (blueprintId: string) =>
+    request<Budget>(`/blueprints/${blueprintId}/budget`),
+
+  replaceBudget: (blueprintId: string, expenseItems: ExpenseItemInput[]) =>
+    request<Budget>(`/blueprints/${blueprintId}/budget`, {
+      method: "PUT",
+      body: JSON.stringify({ expenseItems }),
+    }),
 };
 
 export function errorMessage(error: unknown) {
