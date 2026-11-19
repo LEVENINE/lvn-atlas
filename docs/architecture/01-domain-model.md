@@ -335,6 +335,8 @@ The initial implementation scores relocation readiness from 0 to 100 using only 
 
 Savings rate is `(income - total expenses) / income`, expense burden is `total expenses / income`, and the housing cost ratio uses the amount recorded against the `Rent` expense category. When no rent amount is recorded, housing earns half marks rather than penalizing missing data. Bands are `Strong` (80–100), `Promising` (60–79), `Tight` (40–59), and `At risk` (0–39).
 
+The API returns the score with blueprint responses and with budget reads and writes, so the score and the budget it is derived from arrive together.
+
 Community and migration journey data are not modelled yet, so they cannot contribute to v1. The weights are a documented heuristic to be tuned once that data and cost-of-living references exist.
 
 Historical score snapshots may be introduced in the future if score tracking becomes a product requirement.

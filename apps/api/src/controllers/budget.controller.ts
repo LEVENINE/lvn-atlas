@@ -37,6 +37,7 @@ export async function getBudget(
     const budget = await budgetService.getOrCreate(
       blueprint.id,
       blueprint.expectedMonthlyIncome,
+      blueprint.relocatingHouseholdSize,
     );
 
     res.status(200).json(budget);
@@ -70,6 +71,7 @@ export async function replaceBudget(
       blueprint.id,
       data.expenseItems,
       blueprint.expectedMonthlyIncome,
+      blueprint.relocatingHouseholdSize,
     );
 
     res.status(200).json(budget);

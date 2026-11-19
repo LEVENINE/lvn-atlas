@@ -1,6 +1,10 @@
 import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
 import type { ExpenseItemInput } from "../validators/budget.validator.js";
+import {
+  calculateAtlasScore,
+  HOUSING_CATEGORY_NAME,
+} from "./atlas-score.service.js";
 import { summarizeBudget } from "./financial.service.js";
 
 const expenseItemInclude = {
@@ -30,7 +34,13 @@ type BudgetWithItems = Prisma.BudgetGetPayload<{
 function serialize(
   budget: BudgetWithItems,
   expectedMonthlyIncome: Prisma.Decimal | string,
+  householdSize: number,
 ) {
+  const housingItem = budget.expenseItems.find(
+    (item) =>
+      item.category.name.toLowerCase() === HOUSING_CATEGORY_NAME.toLowerCase(),
+  );
+
   return {
     ...budget,
     expenseItems: budget.expenseItems.map((item) => ({
@@ -41,6 +51,14 @@ function serialize(
       expectedMonthlyIncome,
       budget.expenseItems.map((item) => item.amount),
     ),
+    // The score is returned with the budget it is derived from, so a save
+    // response already carries the recalculated value without a second read.
+    atlasScore: calculateAtlasScore({
+      expectedMonthlyIncome,
+      expenseAmounts: budget.expenseItems.map((item) => item.amount),
+      housingAmount: housingItem?.amount ?? null,
+      householdSize,
+    }),
   };
 }
 
@@ -53,6 +71,7 @@ export const budgetService = {
   async getOrCreate(
     blueprintId: string,
     expectedMonthlyIncome: Prisma.Decimal | string,
+    householdSize: number,
   ) {
     const budget = await prisma.budget.upsert({
       where: {
@@ -65,7 +84,7 @@ export const budgetService = {
       include: budgetInclude,
     });
 
-    return serialize(budget, expectedMonthlyIncome);
+    return serialize(budget, expectedMonthlyIncome, householdSize);
   },
 
   async findMissingCategoryIds(categoryIds: string[]) {
@@ -93,6 +112,7 @@ export const budgetService = {
     blueprintId: string,
     expenseItems: ExpenseItemInput[],
     expectedMonthlyIncome: Prisma.Decimal | string,
+    householdSize: number,
   ) {
     const budget = await prisma.$transaction(async (transaction) => {
       const current = await transaction.budget.upsert({
@@ -129,6 +149,6 @@ export const budgetService = {
       });
     });
 
-    return serialize(budget, expectedMonthlyIncome);
+    return serialize(budget, expectedMonthlyIncome, householdSize);
   },
 };

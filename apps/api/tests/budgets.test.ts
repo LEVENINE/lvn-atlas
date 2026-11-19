@@ -130,6 +130,16 @@ describe("budgets endpoints", () => {
       expectedSavings: "225000.00",
       disposableIncome: "225000.00",
     });
+    expect(response.body.atlasScore).toEqual({
+      score: 100,
+      band: "Strong",
+      factors: {
+        savingsRate: 0.9,
+        expenseRatio: 0.1,
+        housingCostRatio: 0.1,
+        householdSize: 2,
+      },
+    });
     expect(prismaMock.migrationBlueprint.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: blueprintId, userId: currentUser.id },
@@ -183,6 +193,12 @@ describe("budgets endpoints", () => {
       expectedSavings: "213000.00",
       disposableIncome: "213000.00",
     });
+    expect(response.body.atlasScore.factors).toEqual({
+      savingsRate: 0.85,
+      expenseRatio: 0.15,
+      housingCostRatio: 0.1,
+      householdSize: 2,
+    });
     expect(prismaMock.expenseItem.deleteMany).toHaveBeenCalledWith({
       where: { budgetId },
     });
@@ -211,6 +227,7 @@ describe("budgets endpoints", () => {
     expect(response.body.expenseItems).toEqual([]);
     expect(response.body.summary.totalExpenses).toBe("0.00");
     expect(response.body.summary.expectedSavings).toBe("250000.00");
+    expect(response.body.atlasScore.score).toBe(90);
     expect(prismaMock.expenseItem.deleteMany).toHaveBeenCalled();
     expect(prismaMock.expenseItem.createMany).not.toHaveBeenCalled();
   });
