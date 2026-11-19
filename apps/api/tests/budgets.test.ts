@@ -124,6 +124,12 @@ describe("budgets endpoints", () => {
     expect(response.body.expenseItems).toHaveLength(1);
     expect(response.body.expenseItems[0].amount).toBe("25000.00");
     expect(response.body.expenseItems[0].category.name).toBe("Rent");
+    expect(response.body.summary).toEqual({
+      expectedMonthlyIncome: "250000.00",
+      totalExpenses: "25000.00",
+      expectedSavings: "225000.00",
+      disposableIncome: "225000.00",
+    });
     expect(prismaMock.migrationBlueprint.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: blueprintId, userId: currentUser.id },
@@ -171,6 +177,12 @@ describe("budgets endpoints", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.expenseItems).toHaveLength(2);
+    expect(response.body.summary).toEqual({
+      expectedMonthlyIncome: "250000.00",
+      totalExpenses: "37000.00",
+      expectedSavings: "213000.00",
+      disposableIncome: "213000.00",
+    });
     expect(prismaMock.expenseItem.deleteMany).toHaveBeenCalledWith({
       where: { budgetId },
     });
@@ -197,6 +209,8 @@ describe("budgets endpoints", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.expenseItems).toEqual([]);
+    expect(response.body.summary.totalExpenses).toBe("0.00");
+    expect(response.body.summary.expectedSavings).toBe("250000.00");
     expect(prismaMock.expenseItem.deleteMany).toHaveBeenCalled();
     expect(prismaMock.expenseItem.createMany).not.toHaveBeenCalled();
   });

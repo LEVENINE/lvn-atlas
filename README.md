@@ -180,7 +180,6 @@ Product discovery, domain modelling, and the system architecture are documented 
 
 Current focus:
 
-- The financial calculation engine
 - Atlas Score v1
 
 ## Technology Stack
@@ -213,13 +212,15 @@ All routes are versioned under `/api/v1`.
 | GET / POST | `/blueprints` | Yes | List your Migration Blueprints or create one |
 | GET / PATCH / DELETE | `/blueprints/:id` | Yes | Read, update, or delete one of your blueprints |
 | GET | `/expense-categories` | No | List the shared expense categories |
-| GET / PUT | `/blueprints/:id/budget` | Yes | Read a blueprint's budget or replace its expense items |
+| GET / PUT | `/blueprints/:id/budget` | Yes | Read a blueprint's budget and derived summary, or replace its expense items |
 
 A blueprint's budget is created with the blueprint. `PUT /blueprints/:id/budget` treats the submitted expense items as the complete set: amounts for omitted categories are removed, and expense amounts are returned as two-decimal strings.
 
+Budget responses also carry a `summary` computed server-side from the blueprint's income and expense items: `expectedMonthlyIncome`, `totalExpenses`, `expectedSavings`, and `disposableIncome`, all as two-decimal strings. Savings can be negative when expenses exceed income. Expense categories are not yet classified as essential or discretionary, so every expense currently counts as essential and `disposableIncome` equals `expectedSavings`.
+
 The API enforces a single authorization rule: an authenticated user may only act on their own records. Full details are in `docs/architecture/04-api-overview.md` and `docs/architecture/05-authentication.md`.
 
-Not implemented yet: the financial calculation engine, Atlas Score, migration journeys, and blueprint comparison.
+Not implemented yet: Atlas Score, migration journeys, and blueprint comparison.
 
 ## Web Application
 
@@ -233,7 +234,7 @@ Not implemented yet: the financial calculation engine, Atlas Score, migration jo
 | Create a blueprint | `/blueprints/new` |
 | Blueprint detail, budget editing, and delete | `/blueprints/:id` |
 
-The blueprint detail screen edits the monthly budget: every expense category is an amount field, a running total updates as you type, and saving replaces the blueprint's expense items (a cleared category is removed). Derived figures such as savings and the Atlas Score wait on the financial calculation engine. Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
+The blueprint detail screen edits the monthly budget: every expense category is an amount field, a running total updates as you type, and saving replaces the blueprint's expense items (a cleared category is removed). The API returns server-computed totals and savings in the budget summary; the detail screen still sums the amounts locally for its running total while editing, and the Atlas Score comes later. Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
 
 ## Local Development
 

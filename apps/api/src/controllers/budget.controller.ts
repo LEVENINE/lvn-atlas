@@ -34,7 +34,10 @@ export async function getBudget(
   try {
     const blueprint = await requireOwnedBlueprint(req);
 
-    const budget = await budgetService.getOrCreate(blueprint.id);
+    const budget = await budgetService.getOrCreate(
+      blueprint.id,
+      blueprint.expectedMonthlyIncome,
+    );
 
     res.status(200).json(budget);
   } catch (error) {
@@ -66,6 +69,7 @@ export async function replaceBudget(
     const budget = await budgetService.replaceExpenseItems(
       blueprint.id,
       data.expenseItems,
+      blueprint.expectedMonthlyIncome,
     );
 
     res.status(200).json(budget);

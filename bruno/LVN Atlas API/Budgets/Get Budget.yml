@@ -22,6 +22,13 @@ runtime:
           expect(body.blueprintId).to.equal(bru.getVar("blueprintId"));
           expect(body.expenseItems).to.be.an("array");
 
+          expect(body.summary.expectedMonthlyIncome).to.equal("250000.00");
+          expect(body.summary.totalExpenses).to.be.a("string");
+          expect(body.summary.expectedSavings).to.be.a("string");
+          expect(body.summary.disposableIncome).to.equal(
+            body.summary.expectedSavings,
+          );
+
           bru.setVar("budgetId", body.id);
         });
 

@@ -41,6 +41,15 @@ runtime:
           expect(groceries.amount).to.equal("12000.00");
         });
 
+        test("should recalculate the budget summary", function () {
+          const summary = res.getBody().summary;
+
+          expect(summary.expectedMonthlyIncome).to.equal("250000.00");
+          expect(summary.totalExpenses).to.equal("37000.00");
+          expect(summary.expectedSavings).to.equal("213000.00");
+          expect(summary.disposableIncome).to.equal("213000.00");
+        });
+
 settings:
   encodeUrl: true
   timeout: 0
