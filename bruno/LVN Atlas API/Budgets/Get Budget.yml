@@ -29,6 +29,9 @@ runtime:
             body.summary.expectedSavings,
           );
 
+          expect(body.atlasScore.score).to.be.a("number");
+          expect(body.atlasScore.factors.householdSize).to.be.a("number");
+
           bru.setVar("budgetId", body.id);
         });
 

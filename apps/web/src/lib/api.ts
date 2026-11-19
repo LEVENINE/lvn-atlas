@@ -85,6 +85,14 @@ export type Budget = {
   createdAt: string;
   updatedAt: string;
   expenseItems: BudgetExpenseItem[];
+  summary: {
+    expectedMonthlyIncome: string;
+    totalExpenses: string;
+    expectedSavings: string;
+    disposableIncome: string;
+  };
+  /** Recalculated from this budget, so a save response is already current. */
+  atlasScore: AtlasScore;
 };
 
 export type ExpenseItemInput = {

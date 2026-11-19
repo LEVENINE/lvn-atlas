@@ -50,6 +50,15 @@ runtime:
           expect(summary.disposableIncome).to.equal("213000.00");
         });
 
+        test("should return the recalculated atlas score", function () {
+          const score = res.getBody().atlasScore;
+
+          expect(score.score).to.be.a("number");
+          expect(score.factors.savingsRate).to.equal(0.85);
+          expect(score.factors.expenseRatio).to.equal(0.15);
+          expect(score.factors.housingCostRatio).to.equal(0.1);
+        });
+
 settings:
   encodeUrl: true
   timeout: 0

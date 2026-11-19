@@ -4,7 +4,13 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { BudgetEditor } from "../components/BudgetEditor";
 import { Notice } from "../components/Notice";
 import { RouteLine } from "../components/RouteLine";
-import { ApiError, api, errorMessage, type Blueprint } from "../lib/api";
+import {
+  ApiError,
+  api,
+  errorMessage,
+  type AtlasScore,
+  type Blueprint,
+} from "../lib/api";
 import { formatCurrency, formatDate, formatHousehold } from "../lib/format";
 
 type LoadState =
@@ -20,7 +26,6 @@ export function BlueprintDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [refreshError, setRefreshError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -49,15 +54,15 @@ export function BlueprintDetailPage() {
     };
   }, [id]);
 
-  async function handleBudgetSaved() {
-    setRefreshError(null);
-
-    try {
-      const blueprint = await api.blueprint(id);
-      setState({ status: "ready", blueprint });
-    } catch (refreshFailure) {
-      setRefreshError(errorMessage(refreshFailure));
-    }
+  function handleBudgetSaved(atlasScore: AtlasScore) {
+    setState((current) =>
+      current.status === "ready"
+        ? {
+            ...current,
+            blueprint: { ...current.blueprint, atlasScore },
+          }
+        : current,
+    );
   }
 
   async function handleDelete() {
@@ -100,8 +105,6 @@ export function BlueprintDetailPage() {
       {state.status === "ready" && (
         <>
           <section className="card flex flex-col gap-8 p-6 sm:p-8">
-            {refreshError && <Notice>{refreshError}</Notice>}
-
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="eyebrow">Migration blueprint</p>

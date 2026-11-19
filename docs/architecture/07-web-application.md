@@ -4,26 +4,26 @@ The web client lives in `apps/web` and is the browser entry point for LVN Atlas.
 
 ## Stack
 
-| Concern | Choice | Why |
-| --- | --- | --- |
-| Build tool | Vite | Fast dev server, static output that any host can serve |
-| UI | React 19 + TypeScript | Matches the typed API client; no server rendering required yet |
-| Routing | React Router | Client-side routes with SPA fallback (`public/_redirects`) |
-| Styling | Tailwind CSS v4 | Design tokens live in `src/index.css`; no separate CSS build |
-| Data | `fetch` wrapper in `src/lib/api.ts` | No extra runtime dependency; one place for auth and error mapping |
+| Concern    | Choice                              | Why                                                               |
+| ---------- | ----------------------------------- | ----------------------------------------------------------------- |
+| Build tool | Vite                                | Fast dev server, static output that any host can serve            |
+| UI         | React 19 + TypeScript               | Matches the typed API client; no server rendering required yet    |
+| Routing    | React Router                        | Client-side routes with SPA fallback (`public/_redirects`)        |
+| Styling    | Tailwind CSS v4                     | Design tokens live in `src/index.css`; no separate CSS build      |
+| Data       | `fetch` wrapper in `src/lib/api.ts` | No extra runtime dependency; one place for auth and error mapping |
 
 There is no component library: the small set of shared classes (`.card`, `.btn-primary`, `.field-input`, `.eyebrow`) is defined once in `src/index.css`.
 
 ## Routes
 
-| Route | Screen | Access |
-| --- | --- | --- |
-| `/login` | Sign in | Public |
-| `/register` | Create account | Public |
-| `/` | Blueprint dashboard | Authenticated |
-| `/blueprints/new` | Create a blueprint | Authenticated |
+| Route             | Screen                   | Access        |
+| ----------------- | ------------------------ | ------------- |
+| `/login`          | Sign in                  | Public        |
+| `/register`       | Create account           | Public        |
+| `/`               | Blueprint dashboard      | Authenticated |
+| `/blueprints/new` | Create a blueprint       | Authenticated |
 | `/blueprints/:id` | Blueprint detail, delete | Authenticated |
-| `*` | Not found | Public |
+| `*`               | Not found                | Public        |
 
 `RequireAuth` in `src/auth/AuthContext.tsx` restores the session by calling `GET /api/v1/auth/me` when a stored token exists, redirects to `/login` when there is none, and returns the caller to their original route after signing in.
 
@@ -48,6 +48,6 @@ Any static host works:
 
 ## Current limitations
 
-- The UI only covers what the API exposes today: accounts and Migration Blueprints. Budgets, expense items, the financial engine, and the Atlas Score have no screens yet.
+- The UI covers accounts, Migration Blueprints, budget editing, and the Atlas Score. Migration journeys, comparison, and recommendation screens do not exist yet.
 - Blueprints can be created, listed, viewed, and deleted; there is no edit form, although `PATCH /api/v1/blueprints/:id` already supports it.
 - Amounts are formatted as INR because the seeded reference cities are Indian. Currency belongs to the reference data model before this is shown to users elsewhere.

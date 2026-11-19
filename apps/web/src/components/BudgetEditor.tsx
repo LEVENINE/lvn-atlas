@@ -1,6 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
 
-import { api, errorMessage, type ExpenseCategory } from "../lib/api";
+import {
+  api,
+  errorMessage,
+  type AtlasScore,
+  type ExpenseCategory,
+} from "../lib/api";
 import { formatCurrency } from "../lib/format";
 import { Notice } from "./Notice";
 
@@ -20,7 +25,7 @@ export function BudgetEditor({
   onSaved,
 }: {
   blueprintId: string;
-  onSaved?: () => void;
+  onSaved?: (atlasScore: AtlasScore) => void;
 }) {
   const [categories, setCategories] = useState<ExpenseCategory[] | null>(null);
   const [amounts, setAmounts] = useState<Amounts>({});
@@ -117,7 +122,7 @@ export function BudgetEditor({
       setAmounts(nextAmounts);
       setSavedAmounts(nextAmounts);
       setSaved(true);
-      onSaved?.();
+      onSaved?.(budget.atlasScore);
     } catch (saveFailure) {
       setSaveError(errorMessage(saveFailure));
     } finally {

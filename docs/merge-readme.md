@@ -1,72 +1,62 @@
-# Merge README — Atlas Score v1 (Split 1.6)
+# Merge README — Atlas Score in budget responses
 
-Branch: `feature/atlas-score`
-Base: `main` at `bf69840`
+Branch: `feature/budget-score-response`
+Base: `main` at `0ffce33`
 
 ## Summary
 
-Blueprint responses now include a server-computed `atlasScore`: a 0–100 readiness
-estimate with a band and the factor breakdown behind it. It is derived from the
-blueprint's income, household size, and budget on every response — never stored and
-never accepted from the client.
+Budget reads and writes now return the recalculated `atlasScore` alongside the budget
+summary. The web app applies that score from the save response instead of re-reading the
+blueprint, so editing a budget costs one request and cannot leave a stale score behind.
 
 ## What changed
 
-| Area                                                                               | Change                                                                                         |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `apps/api/src/services/atlas-score.service.ts`                                     | New pure scoring module with documented weights, bands, and factors.                           |
-| `apps/api/src/services/blueprint.service.ts`                                       | Blueprint queries load the budget, compute the score, and keep the budget out of the response. |
-| `apps/api/tests/atlas-score.test.ts`                                               | Unit tests for full marks, tight band, overspending, missing rent, and household penalty.      |
-| `apps/api/tests/blueprints.test.ts`                                                | Endpoint test proves the score is returned and the budget is not leaked.                       |
-| `apps/web/src/lib/api.ts`                                                          | `AtlasScore` type on `Blueprint`.                                                              |
-| `apps/web/src/pages/BlueprintDetailPage.tsx`                                       | Shows the score and band; refreshes the blueprint after a budget save.                         |
-| `apps/web/src/components/BudgetEditor.tsx`                                         | Optional `onSaved` callback so the parent can refresh derived values.                          |
-| `bruno/LVN Atlas API/Blueprints/*.yml`                                             | Request tests assert the score shape on list and detail.                                       |
-| `README.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/architecture/01-domain-model.md` | Document the score, its formula, and Split 1.6 status.                                         |
+| Area                                                                                                                          | Change                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `apps/api/src/services/budget.service.ts`                                                                                     | Budget serialization computes and returns `atlasScore` from the expense items and the blueprint's income and household size. |
+| `apps/api/src/controllers/budget.controller.ts`                                                                               | Passes the owned blueprint's household size into budget reads and replaces.                                                  |
+| `apps/api/tests/budgets.test.ts`                                                                                              | Asserts the score on read, the recalculated factors on replace, and the cleared-budget score.                                |
+| `apps/web/src/lib/api.ts`                                                                                                     | `Budget` gains `summary` and `atlasScore` types.                                                                             |
+| `apps/web/src/components/BudgetEditor.tsx`                                                                                    | `onSaved` now hands the returned score to the parent.                                                                        |
+| `apps/web/src/pages/BlueprintDetailPage.tsx`                                                                                  | Applies the saved score to the header without refetching; the refetch error state is gone.                                   |
+| `bruno/LVN Atlas API/Budgets/*.yml`                                                                                           | Request tests assert the score and its factors.                                                                              |
+| `README.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/architecture/01-domain-model.md`, `docs/architecture/07-web-application.md` | Document the score on budget responses and fix stale web-client limitations.                                                 |
 
-## Formula
+## Behavior
 
-| Factor             | Points | Full marks            | Zero marks                                |
-| ------------------ | ------ | --------------------- | ----------------------------------------- |
-| Savings rate       | 45     | 30% of income saved   | No savings or overspending                |
-| Expense burden     | 25     | 50% of income spent   | 100% of income spent                      |
-| Housing cost ratio | 20     | 25% of income on rent | 60% of income on rent                     |
-| Household size     | 10     | Two people or fewer   | Six or more (two points per extra person) |
-
-- Housing uses the `Rent` expense category; with no rent recorded it earns half marks.
-- Bands: `Strong` 80–100, `Promising` 60–79, `Tight` 40–59, `At risk` 0–39.
-- Community and migration journey data are not modelled yet and do not contribute.
-
-Response shape:
+- `GET /api/v1/blueprints/:id/budget` and `PUT /api/v1/blueprints/:id/budget` include:
 
 ```json
 "atlasScore": {
-  "score": 84,
+  "score": 100,
   "band": "Strong",
   "factors": {
-    "savingsRate": 0.5,
-    "expenseRatio": 0.5,
-    "housingCostRatio": 0.5,
-    "householdSize": 3
+    "savingsRate": 0.85,
+    "expenseRatio": 0.15,
+    "housingCostRatio": 0.1,
+    "householdSize": 2
   }
 }
 ```
 
+- The score is computed from the saved expense items, so the value in a `PUT` response
+  already reflects the new budget.
+- No extra query: income and household size come from the blueprint the controller
+  already loads for ownership checks.
+
 ## Out of scope
 
+- Live scoring while the user types (a preview endpoint remains a later option).
 - Comparison-oriented dashboard data (Split 1.7).
-- Journey and community factors in the score.
-- Storing score history.
 
 ## Verification
 
 - `pnpm check` on the branch (see results in the PR).
-- Live check against Postgres: a temporary blueprint scored 88 with no expenses, then 84
-  after adding ₹60,000 rent; the blueprint was deleted afterward.
-- Not verified: the Bruno collection run against a live database.
+- API tests cover read, replace, and cleared-budget scores.
+- Not verified: the Bruno collection against a live database, and the score card in a
+  browser.
 
 ## Merge notes
 
 - No migrations, environment variables, or dependency changes.
-- Client input for the score is rejected implicitly: the field is never read from requests.
 - Merge commit title follows the PR title.
