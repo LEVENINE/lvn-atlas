@@ -48,6 +48,6 @@ Any static host works:
 
 ## Current limitations
 
-- The UI covers accounts, Migration Blueprints, budget editing, and the Atlas Score. Migration journeys, comparison, and recommendation screens do not exist yet.
+- The UI covers accounts, Migration Blueprints, budget editing, the Atlas Score, and a side-by-side comparison table on the dashboard. Migration journeys and recommendation screens do not exist yet.
 - Blueprints can be created, listed, viewed, and deleted; there is no edit form, although `PATCH /api/v1/blueprints/:id` already supports it.
 - Amounts are formatted as INR because the seeded reference cities are Indian. Currency belongs to the reference data model before this is shown to users elsewhere.

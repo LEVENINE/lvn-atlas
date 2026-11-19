@@ -30,6 +30,15 @@ runtime:
           expect(score.factors.householdSize).to.be.a("number");
         });
 
+        test("should include comparison-ready budget figures", function () {
+          const summary = res.getBody().summary;
+
+          expect(summary.expectedMonthlyIncome).to.be.a("string");
+          expect(summary.totalExpenses).to.be.a("string");
+          expect(summary.expectedSavings).to.be.a("string");
+          expect(summary.disposableIncome).to.be.a("string");
+        });
+
 settings:
   encodeUrl: true
   timeout: 0

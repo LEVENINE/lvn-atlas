@@ -76,8 +76,8 @@ export function DashboardPage() {
 
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-mist-400">
             Each blueprint holds one relocation scenario: two cities, the income
-            you expect there, and who is moving with you. Budgets and savings
-            projections arrive in the next milestone.
+            you expect there, and who is moving with you. Budgets, savings
+            projections, and an Atlas Score travel with every blueprint.
           </p>
         </div>
 
@@ -114,6 +114,10 @@ export function DashboardPage() {
         />
       </section>
 
+      {blueprints !== null && blueprints.length > 1 && (
+        <ComparisonTable blueprints={blueprints} />
+      )}
+
       <section className="flex flex-col gap-6">
         <div className="flex items-baseline justify-between gap-4 border-b border-white/10 pb-4">
           <h2 className="font-display text-2xl text-mist-50">
@@ -149,6 +153,85 @@ export function DashboardPage() {
         )}
       </section>
     </div>
+  );
+}
+
+function ComparisonTable({ blueprints }: { blueprints: Blueprint[] }) {
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex items-baseline justify-between gap-4 border-b border-white/10 pb-4">
+        <h2 className="font-display text-2xl text-mist-50">
+          Compare scenarios
+        </h2>
+
+        <p className="text-xs text-mist-500">Monthly figures</p>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-white/10">
+        <table className="w-full min-w-[42rem] text-left text-sm">
+          <thead className="border-b border-white/10 text-mist-500">
+            <tr>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Scenario
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Atlas Score
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Income
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Expenses
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Savings
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {blueprints.map((blueprint) => (
+              <tr
+                key={blueprint.id}
+                className="border-b border-white/5 last:border-0"
+              >
+                <th scope="row" className="px-4 py-3 font-normal">
+                  <Link
+                    to={`/blueprints/${blueprint.id}`}
+                    className="text-mist-100 transition hover:text-ember-300"
+                  >
+                    {blueprint.originCity.name} →{" "}
+                    {blueprint.destinationCity.name}
+                  </Link>
+                </th>
+                <td className="px-4 py-3 text-mist-100">
+                  {blueprint.atlasScore.score} / 100
+                  <span className="text-xs text-mist-500">
+                    {" "}
+                    · {blueprint.atlasScore.band}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-mist-100">
+                  {formatCurrency(blueprint.summary.expectedMonthlyIncome)}
+                </td>
+                <td className="px-4 py-3 text-mist-100">
+                  {formatCurrency(blueprint.summary.totalExpenses)}
+                </td>
+                <td
+                  className={`px-4 py-3 ${
+                    Number(blueprint.summary.expectedSavings) < 0
+                      ? "text-red-300"
+                      : "text-mist-100"
+                  }`}
+                >
+                  {formatCurrency(blueprint.summary.expectedSavings)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 

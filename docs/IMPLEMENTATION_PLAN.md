@@ -27,6 +27,7 @@ Already in place:
 - Blueprint budgets and expense items, with shared expense category reference data
 - Server-side budget summary: total expenses, expected savings, and disposable income derived from blueprint income and expense items
 - Atlas Score v1 on blueprint responses: a derived 0–100 readiness estimate with a band and factor breakdown
+- Comparison-ready blueprint data: every list and detail response carries the budget summary and Atlas Score, and the dashboard compares saved scenarios side by side
 - Bruno collections for health, cities, auth, users, profiles, and blueprints
 - Vitest API tests and a GitHub Actions CI workflow
 - Code-quality scripts: lint, typecheck, test, format, build
@@ -212,6 +213,8 @@ In progress / incomplete:
 - Acceptance criteria:
   - A user can view all saved blueprints
   - Blueprint summaries support side-by-side comparison
+- Status: Complete
+- Notes: `GET /api/v1/blueprints` and `GET /api/v1/blueprints/:id` return a budget-derived `summary` (`expectedMonthlyIncome`, `totalExpenses`, `expectedSavings`, `disposableIncome`) next to the Atlas Score, using the budget already loaded for scoring. No new endpoint or query was needed: the list response is the comparison payload, so a client can render scenarios side by side from one request. The dashboard shows each blueprint's expenses, savings, and score on its card, and renders a comparison table (route, score, income, expenses, savings) whenever the user has more than one blueprint. Negative savings are highlighted. Editing a blueprint's income or household size still happens through the existing blueprint endpoints; the figures refresh with the next list response.
 
 ### Split 1.8 — Validation and Error Hardening
 

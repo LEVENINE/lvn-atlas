@@ -8,6 +8,7 @@ import {
   calculateAtlasScore,
   HOUSING_CATEGORY_NAME,
 } from "./atlas-score.service.js";
+import { summarizeBudget } from "./financial.service.js";
 
 const citySelect = {
   id: true,
@@ -44,12 +45,17 @@ function serialize(blueprint: BlueprintWithCities) {
       item.category.name.toLowerCase() === HOUSING_CATEGORY_NAME.toLowerCase(),
   );
 
+  const expenseAmounts = expenseItems.map((item) => item.amount);
+
   return {
     ...rest,
     expectedMonthlyIncome: rest.expectedMonthlyIncome.toFixed(2),
+    // Comparison-ready figures so list and detail responses can be shown side
+    // by side without a request per blueprint.
+    summary: summarizeBudget(rest.expectedMonthlyIncome, expenseAmounts),
     atlasScore: calculateAtlasScore({
       expectedMonthlyIncome: rest.expectedMonthlyIncome,
-      expenseAmounts: expenseItems.map((item) => item.amount),
+      expenseAmounts,
       housingAmount: housingItem?.amount ?? null,
       householdSize: rest.relocatingHouseholdSize,
     }),
