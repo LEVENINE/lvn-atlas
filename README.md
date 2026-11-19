@@ -298,6 +298,10 @@ pnpm test         # API Vitest suite, no database required
 
 The same checks run in CI on every push and pull request via `.github/workflows/ci.yml`.
 
+## Merging to Main
+
+A branch is ready to merge when `pnpm check` passes and this README describes the merged behavior. Every merge to `main` must include a README update covering anything it changes: routes, screens, commands, configuration, or repository status.
+
 ---
 
 # License
