@@ -1,0 +1,119 @@
+import { useState, type FormEvent } from "react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+
+import { useAuth } from "../auth/AuthContext";
+import { AuthLayout } from "../components/AuthLayout";
+import { Notice } from "../components/Notice";
+import { errorMessage } from "../lib/api";
+
+type LocationState = { from?: string } | null;
+
+export function LoginPage() {
+  const { status, signIn } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = (location.state as LocationState)?.from ?? "/";
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  if (status === "authenticated") {
+    return <Navigate to={from} replace />;
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      await signIn({ email: email.trim(), password });
+      navigate(from, { replace: true });
+    } catch (signInError) {
+      setError(errorMessage(signInError));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <AuthLayout>
+      <div className="mb-8">
+        <p className="eyebrow">Welcome back</p>
+        <h2 className="mt-3 font-display text-3xl text-mist-50">
+          Sign in to your plans
+        </h2>
+        <p className="mt-2 text-sm text-mist-400">
+          Pick up where you left off and keep modelling your move.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
+        {error && <Notice>{error}</Notice>}
+
+        <div>
+          <label htmlFor="email" className="field-label">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            className="field-input"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="field-label">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="••••••••"
+            className="field-input"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className="btn-primary mt-1"
+        >
+          {submitting ? "Signing in…" : "Sign in"}
+        </button>
+      </form>
+
+      <p className="mt-6 text-sm text-mist-400">
+        New to LVN Atlas?{" "}
+        <Link
+          to="/register"
+          className="font-medium text-ember-300 transition hover:text-ember-200"
+        >
+          Create an account
+        </Link>
+      </p>
+
+      {import.meta.env.DEV && (
+        <p className="mt-8 border-t border-white/10 pt-4 text-xs leading-relaxed text-mist-500">
+          Seeded demo account:{" "}
+          <span className="text-mist-300">john@example.com</span> /{" "}
+          <span className="text-mist-300">Password123!</span>
+        </p>
+      )}
+    </AuthLayout>
+  );
+}

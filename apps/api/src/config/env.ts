@@ -19,6 +19,9 @@ const envSchema = z.object({
     .min(32, "JWT_SECRET must be at least 32 characters long"),
 
   JWT_EXPIRES_IN: z.string().default("1h"),
+
+  // Comma-separated list of browser origins allowed to call the API.
+  CORS_ORIGIN: z.string().default("http://localhost:5173"),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

@@ -174,9 +174,9 @@ The project emphasizes:
 
 # Repository Status
 
-✅ **Backend Foundation Implemented**
+✅ **API and Web Client Foundation Implemented**
 
-Product discovery, domain modelling, and the system architecture are documented in `docs/`, and the API foundation described in `docs/IMPLEMENTATION_PLAN.md` (Milestone 0, Splits 0.1–0.7) is implemented and covered by tests.
+Product discovery, domain modelling, and the system architecture are documented in `docs/`, and the foundation described in `docs/IMPLEMENTATION_PLAN.md` (Milestone 0, Splits 0.1–0.7 and 0.9) is implemented. The API is covered by tests; the web client is a static build with no automated tests yet.
 
 Current focus:
 
@@ -193,6 +193,7 @@ Current focus:
 | Database | PostgreSQL 17 via Prisma 7 |
 | Validation | Zod 4 |
 | Authentication | JWT (HS256) with bcrypt password hashing |
+| Web client | React 19, Vite, React Router, Tailwind CSS v4 |
 | Testing | Vitest + Supertest (Prisma client mocked, no database required) |
 | Tooling | pnpm workspaces, ESLint, Prettier, GitHub Actions |
 
@@ -217,6 +218,20 @@ The API enforces a single authorization rule: an authenticated user may only act
 
 Not implemented yet: budgets and expense items, the financial calculation engine, Atlas Score, migration journeys, and blueprint comparison.
 
+## Web Application
+
+`apps/web` is a single-page React client served as static files. It covers what the API exposes today:
+
+| Screen | Route |
+| --- | --- |
+| Sign in | `/login` |
+| Create account | `/register` |
+| Blueprint dashboard | `/` |
+| Create a blueprint | `/blueprints/new` |
+| Blueprint detail and delete | `/blueprints/:id` |
+
+Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
+
 ## Local Development
 
 Prerequisites: Node.js 24+, pnpm 11+, and Docker (for the local PostgreSQL instance).
@@ -236,13 +251,17 @@ pnpm --filter @lvn/api exec prisma generate
 pnpm --filter @lvn/api exec prisma migrate deploy
 pnpm db:seed
 
-# 5. Run the API in watch mode (http://localhost:3000)
+# 5. Run the API (http://localhost:3000) and the web client (http://localhost:5173)
 pnpm dev
 ```
 
-Register or log in through the API to obtain a bearer token, then use the requests in `bruno/LVN Atlas API/` (login, list cities, and create a blueprint in that order) to exercise the flow.
+Open http://localhost:5173 and sign in with the seeded demo account `john@example.com` / `Password123!`, or create your own account. The Vite dev server proxies `/api` to the API, so no CORS configuration is needed locally.
 
-### Required environment variables
+The same flow can be exercised without the UI using the requests in `bruno/LVN Atlas API/` (login, list cities, then create a blueprint).
+
+### Environment variables
+
+API (`apps/api/.env`, see `apps/api/.env.example`):
 
 | Variable | Purpose |
 | --- | --- |
@@ -251,12 +270,30 @@ Register or log in through the API to obtain a bearer token, then use the reques
 | `JWT_SECRET` | Signing secret for access tokens |
 | `JWT_EXPIRES_IN` | Optional token lifetime |
 | `LOG_LEVEL` | Optional log verbosity |
+| `CORS_ORIGIN` | Allowed browser origin(s), comma-separated (defaults to `http://localhost:5173`) |
+
+Web client (build time):
+
+| Variable | Purpose |
+| --- | --- |
+| `VITE_API_BASE_URL` | Absolute API origin for deployed builds, e.g. `https://api.example.com`. Leave unset in development. |
+| `VITE_API_PROXY_TARGET` | Optional dev proxy target (defaults to `http://localhost:3000`) |
+
+## Hosting the Web Client
+
+The client is static output:
+
+```bash
+pnpm --filter @lvn/web build   # writes apps/web/dist
+```
+
+Deploy `apps/web/dist` to any static host (Vercel, Netlify, Cloudflare Pages, S3 + CDN, nginx), set `VITE_API_BASE_URL` to the deployed API origin before building, and make sure the host rewrites unknown paths to `index.html` (`apps/web/public/_redirects` covers Netlify-style hosts). Then add that deployed origin to the API's `CORS_ORIGIN`.
 
 ## Quality Checks
 
 ```bash
-pnpm check        # lint, typecheck, tests, format check, and build
-pnpm test         # Vitest suite, no database required
+pnpm check        # lint, typecheck, tests, format check, and build across both packages
+pnpm test         # API Vitest suite, no database required
 ```
 
 The same checks run in CI on every push and pull request via `.github/workflows/ci.yml`.
