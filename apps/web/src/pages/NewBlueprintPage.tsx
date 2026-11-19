@@ -106,8 +106,8 @@ export function NewBlueprintPage() {
         </h1>
 
         <p className="mt-3 text-sm leading-relaxed text-mist-400">
-          Start with the move itself. Costs, savings, and the Atlas Score will
-          be calculated from this blueprint once budgeting ships.
+          Start with the move itself. You can add monthly costs on the next
+          screen, and the Atlas Score will follow.
         </p>
       </div>
 

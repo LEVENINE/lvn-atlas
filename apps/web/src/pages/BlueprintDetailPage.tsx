@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { BudgetEditor } from "../components/BudgetEditor";
 import { Notice } from "../components/Notice";
 import { RouteLine } from "../components/RouteLine";
 import { ApiError, api, errorMessage, type Blueprint } from "../lib/api";
@@ -126,18 +127,7 @@ export function BlueprintDetailPage() {
             </dl>
           </section>
 
-          <section className="card flex flex-col gap-3 p-6 sm:p-8">
-            <h2 className="font-display text-xl text-mist-50">
-              What this plan does not have yet
-            </h2>
-
-            <p className="text-sm leading-relaxed text-mist-400">
-              Monthly expenses, savings, and the Atlas Score come from the
-              budget milestone that is still being built. Until then, this
-              blueprint is the move itself: who is going, where to, and on what
-              income.
-            </p>
-          </section>
+          <BudgetEditor blueprintId={state.blueprint.id} />
 
           <section className="flex flex-col gap-4">
             {deleteError && <Notice>{deleteError}</Notice>}

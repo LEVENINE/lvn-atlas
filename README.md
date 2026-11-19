@@ -180,7 +180,6 @@ Product discovery, domain modelling, and the system architecture are documented 
 
 Current focus:
 
-- Budget editing in the web client
 - The financial calculation engine
 - Atlas Score v1
 
@@ -232,9 +231,9 @@ Not implemented yet: the financial calculation engine, Atlas Score, migration jo
 | Create account | `/register` |
 | Blueprint dashboard | `/` |
 | Create a blueprint | `/blueprints/new` |
-| Blueprint detail and delete | `/blueprints/:id` |
+| Blueprint detail, budget editing, and delete | `/blueprints/:id` |
 
-Blueprint budgets are exposed by the API but cannot be edited in the web client yet. Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
+The blueprint detail screen edits the monthly budget: every expense category is an amount field, a running total updates as you type, and saving replaces the blueprint's expense items (a cleared category is removed). Derived figures such as savings and the Atlas Score wait on the financial calculation engine. Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
 
 ## Local Development
 
