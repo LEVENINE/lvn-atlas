@@ -16,3 +16,9 @@ variables:
     value: ""
   - name: blueprintId
     value: ""
+  - name: budgetId
+    value: ""
+  - name: rentCategoryId
+    value: ""
+  - name: groceriesCategoryId
+    value: ""

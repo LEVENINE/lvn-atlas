@@ -1,0 +1,38 @@
+info:
+  name: Replace Budget With Unknown Category
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{baseUrl}}api/v1/blueprints/{{blueprintId}}/budget"
+  body:
+    type: json
+    data: |-
+      {
+        "expenseItems": [
+          {
+            "categoryId": "00000000-0000-4000-8000-000000000000",
+            "amount": 5000
+          }
+        ]
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("should return 404 status", function () {
+          expect(res.getStatus()).to.equal(404);
+        });
+
+        test("should return EXPENSE_CATEGORY_NOT_FOUND", function () {
+          expect(res.getBody().error.code).to.equal("EXPENSE_CATEGORY_NOT_FOUND");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

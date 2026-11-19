@@ -106,7 +106,10 @@ describe("blueprints endpoints", () => {
     expect(response.body.id).toBe(blueprintId);
     expect(prismaMock.migrationBlueprint.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ userId: currentUser.id }),
+        data: expect.objectContaining({
+          userId: currentUser.id,
+          budget: { create: {} },
+        }),
       }),
     );
   });
