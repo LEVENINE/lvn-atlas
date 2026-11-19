@@ -57,6 +57,8 @@ export type Blueprint = {
   updatedAt: string;
   originCity: CitySummary;
   destinationCity: CitySummary;
+  /** Budget-derived figures, calculated server-side. */
+  summary: BudgetSummary;
   /** Derived readiness estimate; never sent by the client. */
   atlasScore: AtlasScore;
 };
@@ -79,18 +81,20 @@ export type BudgetExpenseItem = {
   category: Pick<ExpenseCategory, "id" | "name">;
 };
 
+export type BudgetSummary = {
+  expectedMonthlyIncome: string;
+  totalExpenses: string;
+  expectedSavings: string;
+  disposableIncome: string;
+};
+
 export type Budget = {
   id: string;
   blueprintId: string;
   createdAt: string;
   updatedAt: string;
   expenseItems: BudgetExpenseItem[];
-  summary: {
-    expectedMonthlyIncome: string;
-    totalExpenses: string;
-    expectedSavings: string;
-    disposableIncome: string;
-  };
+  summary: BudgetSummary;
   /** Recalculated from this budget, so a save response is already current. */
   atlasScore: AtlasScore;
 };

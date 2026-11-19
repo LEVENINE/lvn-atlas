@@ -1,60 +1,57 @@
-# Merge README — Atlas Score in budget responses
+# Merge README — Blueprint comparison and dashboard data (Split 1.7)
 
-Branch: `feature/budget-score-response`
-Base: `main` at `0ffce33`
+Branch: `feature/blueprint-comparison`
+Base: `main` at `9ca1664`
 
 ## Summary
 
-Budget reads and writes now return the recalculated `atlasScore` alongside the budget
-summary. The web app applies that score from the save response instead of re-reading the
-blueprint, so editing a budget costs one request and cannot leave a stale score behind.
+Blueprint list and detail responses now carry the budget-derived summary next to the
+Atlas Score, so saved scenarios can be compared from a single request. The dashboard
+renders those figures on each card and adds a side-by-side comparison table once a user
+has more than one blueprint.
 
 ## What changed
 
-| Area                                                                                                                          | Change                                                                                                                       |
-| ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api/src/services/budget.service.ts`                                                                                     | Budget serialization computes and returns `atlasScore` from the expense items and the blueprint's income and household size. |
-| `apps/api/src/controllers/budget.controller.ts`                                                                               | Passes the owned blueprint's household size into budget reads and replaces.                                                  |
-| `apps/api/tests/budgets.test.ts`                                                                                              | Asserts the score on read, the recalculated factors on replace, and the cleared-budget score.                                |
-| `apps/web/src/lib/api.ts`                                                                                                     | `Budget` gains `summary` and `atlasScore` types.                                                                             |
-| `apps/web/src/components/BudgetEditor.tsx`                                                                                    | `onSaved` now hands the returned score to the parent.                                                                        |
-| `apps/web/src/pages/BlueprintDetailPage.tsx`                                                                                  | Applies the saved score to the header without refetching; the refetch error state is gone.                                   |
-| `bruno/LVN Atlas API/Budgets/*.yml`                                                                                           | Request tests assert the score and its factors.                                                                              |
-| `README.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/architecture/01-domain-model.md`, `docs/architecture/07-web-application.md` | Document the score on budget responses and fix stale web-client limitations.                                                 |
+| Area                                                                                  | Change                                                                                                    |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `apps/api/src/services/blueprint.service.ts`                                          | Blueprint responses include `summary` computed from the already-loaded budget.                            |
+| `apps/api/tests/blueprints.test.ts`                                                   | Asserts an empty-budget summary and the budgeted summary alongside the score.                             |
+| `apps/web/src/lib/api.ts`                                                             | Extracted `BudgetSummary` and added `summary` to `Blueprint`.                                             |
+| `apps/web/src/components/BlueprintCard.tsx`                                           | Cards show monthly expenses, expected savings (red when negative), and the Atlas Score.                   |
+| `apps/web/src/pages/DashboardPage.tsx`                                                | Adds a "Compare scenarios" table for two or more blueprints; copy no longer says budgets are future work. |
+| `bruno/LVN Atlas API/Blueprints/*.yml`                                                | Request tests assert the comparison figures on list and detail.                                           |
+| `README.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/architecture/07-web-application.md` | Document comparison data, mark Split 1.7 complete, and refresh limitations.                               |
 
 ## Behavior
 
-- `GET /api/v1/blueprints/:id/budget` and `PUT /api/v1/blueprints/:id/budget` include:
+Blueprint responses now include:
 
 ```json
-"atlasScore": {
-  "score": 100,
-  "band": "Strong",
-  "factors": {
-    "savingsRate": 0.85,
-    "expenseRatio": 0.15,
-    "housingCostRatio": 0.1,
-    "householdSize": 2
-  }
+"summary": {
+  "expectedMonthlyIncome": "250000.00",
+  "totalExpenses": "25000.00",
+  "expectedSavings": "225000.00",
+  "disposableIncome": "225000.00"
 }
 ```
 
-- The score is computed from the saved expense items, so the value in a `PUT` response
-  already reflects the new budget.
-- No extra query: income and household size come from the blueprint the controller
-  already loads for ownership checks.
+- No new endpoint or query: the list response is the comparison payload.
+- Dashboard comparison table columns: scenario route (links to detail), Atlas Score and
+  band, income, expenses, and savings. Shown only when at least two blueprints exist.
+- Budget edits still update figures through the budget endpoints; blueprint figures
+  refresh with the next blueprint read.
 
 ## Out of scope
 
-- Live scoring while the user types (a preview endpoint remains a later option).
-- Comparison-oriented dashboard data (Split 1.7).
+- Editing a blueprint's income or household size from the web client.
+- Choosing which blueprints to compare; the dashboard compares all of them.
+- Migration journey data.
 
 ## Verification
 
 - `pnpm check` on the branch (see results in the PR).
-- API tests cover read, replace, and cleared-budget scores.
-- Not verified: the Bruno collection against a live database, and the score card in a
-  browser.
+- API tests cover empty-budget and budgeted summaries on blueprint responses.
+- Not verified: the dashboard comparison table in a browser, or a live Bruno run.
 
 ## Merge notes
 

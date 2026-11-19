@@ -180,7 +180,7 @@ Product discovery, domain modelling, and the system architecture are documented 
 
 Current focus:
 
-- Blueprint comparison and dashboard data
+- Validation and error hardening
 
 ## Technology Stack
 
@@ -209,20 +209,20 @@ All routes are versioned under `/api/v1`.
 | GET                  | `/auth/me`               | Yes  | Read the authenticated user and profile                                     |
 | GET / PUT            | `/users/:id`             | Yes  | Read or update your own user record                                         |
 | GET / PUT            | `/profiles/:id`          | Yes  | Read or update your own profile                                             |
-| GET / POST           | `/blueprints`            | Yes  | List your Migration Blueprints (with Atlas Scores) or create one            |
-| GET / PATCH / DELETE | `/blueprints/:id`        | Yes  | Read, update, or delete one of your blueprints                              |
+| GET / POST           | `/blueprints`            | Yes  | List your Migration Blueprints with comparison figures, or create one       |
+| GET / PATCH / DELETE | `/blueprints/:id`        | Yes  | Read one blueprint with its summary, update, or delete it                   |
 | GET                  | `/expense-categories`    | No   | List the shared expense categories                                          |
 | GET / PUT            | `/blueprints/:id/budget` | Yes  | Read a blueprint's budget and derived summary, or replace its expense items |
 
 A blueprint's budget is created with the blueprint. `PUT /blueprints/:id/budget` treats the submitted expense items as the complete set: amounts for omitted categories are removed, and expense amounts are returned as two-decimal strings.
 
-Blueprint responses include a derived `atlasScore`: an integer `score` from 0 to 100, a `band` (`Strong`, `Promising`, `Tight`, or `At risk`), and the `factors` behind them (savings rate, expense ratio, housing cost ratio, household size). The score is recomputed from income, household size, and the blueprint's budget on every response, so it is never stored or accepted from the client. v1 weights give up to 45 points for savings rate, 25 for expense burden, 20 for housing cost (the `Rent` expense item, with half marks when rent is not recorded), and 10 for household size; community and journey data do not feed the score yet.
+Blueprint responses include a budget-derived `summary` (`expectedMonthlyIncome`, `totalExpenses`, `expectedSavings`, `disposableIncome`) so saved scenarios can be compared without a request per blueprint, plus a derived `atlasScore`: an integer `score` from 0 to 100, a `band` (`Strong`, `Promising`, `Tight`, or `At risk`), and the `factors` behind them (savings rate, expense ratio, housing cost ratio, household size). The score is recomputed from income, household size, and the blueprint's budget on every response, so it is never stored or accepted from the client. v1 weights give up to 45 points for savings rate, 25 for expense burden, 20 for housing cost (the `Rent` expense item, with half marks when rent is not recorded), and 10 for household size; community and journey data do not feed the score yet.
 
 Budget responses also carry a `summary` computed server-side from the blueprint's income and expense items — `expectedMonthlyIncome`, `totalExpenses`, `expectedSavings`, and `disposableIncome`, all as two-decimal strings — plus the same recalculated `atlasScore`, so a save returns the updated score without another request. Savings can be negative when expenses exceed income. Expense categories are not yet classified as essential or discretionary, so every expense currently counts as essential and `disposableIncome` equals `expectedSavings`.
 
 The API enforces a single authorization rule: an authenticated user may only act on their own records. Full details are in `docs/architecture/04-api-overview.md` and `docs/architecture/05-authentication.md`.
 
-Not implemented yet: migration journeys, blueprint comparison, and the recommendation features built on them.
+Not implemented yet: migration journeys and the recommendation features built on them.
 
 ## Web Application
 
@@ -232,11 +232,11 @@ Not implemented yet: migration journeys, blueprint comparison, and the recommend
 | -------------------------------------------- | ----------------- |
 | Sign in                                      | `/login`          |
 | Create account                               | `/register`       |
-| Blueprint dashboard                          | `/`               |
+| Blueprint dashboard with scenario comparison | `/`               |
 | Create a blueprint                           | `/blueprints/new` |
 | Blueprint detail, budget editing, and delete | `/blueprints/:id` |
 
-The blueprint detail screen edits the monthly budget: every expense category is an amount field, a running total updates as you type, and saving replaces the blueprint's expense items (a cleared category is removed). The API returns server-computed totals and savings in the budget summary; the detail screen still sums the amounts locally for its running total while editing. It also shows the blueprint's Atlas Score and refreshes it after a budget save. Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
+The blueprint detail screen edits the monthly budget: every expense category is an amount field, a running total updates as you type, and saving replaces the blueprint's expense items (a cleared category is removed). The API returns server-computed totals and savings in the budget summary; the detail screen still sums the amounts locally for its running total while editing. It also shows the blueprint's Atlas Score and applies the score returned by a budget save. The dashboard lists every blueprint with its expenses, savings, and score, and shows a side-by-side comparison table once more than one blueprint exists. Design notes, session handling, and hosting details are in `docs/architecture/07-web-application.md`. The access token is kept in `localStorage`, which is an MVP trade-off to revisit before the platform stores sensitive data.
 
 ## Local Development
 

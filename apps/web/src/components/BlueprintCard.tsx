@@ -70,8 +70,34 @@ export function BlueprintCard({
         </div>
 
         <div>
-          <dt className="eyebrow">Budget</dt>
-          <dd className="mt-1 text-mist-500">Not built yet</dd>
+          <dt className="eyebrow">Monthly expenses</dt>
+          <dd className="mt-1 text-mist-100">
+            {formatCurrency(blueprint.summary.totalExpenses)}
+          </dd>
+        </div>
+
+        <div>
+          <dt className="eyebrow">Expected savings</dt>
+          <dd
+            className={`mt-1 ${
+              Number(blueprint.summary.expectedSavings) < 0
+                ? "text-red-300"
+                : "text-mist-100"
+            }`}
+          >
+            {formatCurrency(blueprint.summary.expectedSavings)}
+          </dd>
+        </div>
+
+        <div>
+          <dt className="eyebrow">Atlas Score</dt>
+          <dd className="mt-1 text-mist-100">
+            {blueprint.atlasScore.score} / 100
+            <span className="text-xs text-mist-500">
+              {" "}
+              · {blueprint.atlasScore.band}
+            </span>
+          </dd>
         </div>
       </dl>
 

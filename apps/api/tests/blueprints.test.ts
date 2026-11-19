@@ -194,6 +194,12 @@ describe("blueprints endpoints", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.destinationCity.name).toBe("Pune");
+    expect(response.body.summary).toEqual({
+      expectedMonthlyIncome: "250000.00",
+      totalExpenses: "0.00",
+      expectedSavings: "250000.00",
+      disposableIncome: "250000.00",
+    });
   });
 
   it("returns the derived atlas score without exposing the budget", async () => {
@@ -207,6 +213,8 @@ describe("blueprints endpoints", () => {
     );
 
     expect(response.status).toBe(200);
+    expect(response.body.summary.totalExpenses).toBe("25000.00");
+    expect(response.body.summary.expectedSavings).toBe("225000.00");
     expect(response.body.atlasScore).toEqual({
       score: 100,
       band: "Strong",
