@@ -29,6 +29,7 @@ Already in place:
 - Vitest API tests and a GitHub Actions CI workflow
 - Code-quality scripts: lint, typecheck, test, format, build
 - Web application (`apps/web`) with sign in, registration, blueprint dashboard, and blueprint creation/detail screens
+- Budget editing in the web client: the blueprint detail screen loads a blueprint's expense items, edits them per category, and saves through the replace-budget endpoint
 
 In progress / incomplete:
 
@@ -46,6 +47,9 @@ In progress / incomplete:
 4. Every API split should include route, controller, service, validation, and Bruno coverage.
 5. Derived values (expenses, savings, disposable income, Atlas Score) are calculated by the system, never accepted as client input.
 6. Personal identity must never be exposed through Migration Journey responses.
+7. Every merge updates `README.md` when the change alters behavior, routes, screens, commands, configuration, or status. A branch is not merge-ready until the README matches the code.
+8. Every merge carries a merge README (`docs/merge-readme.md`) generated for that branch: summary, changed areas, behavior, verification, and merge notes.
+9. `pnpm check` (lint, typecheck, tests, format, builds) is the merge gate, and a branch is only reported merge-ready after it passes.
 
 ---
 
@@ -176,6 +180,7 @@ In progress / incomplete:
   - Expense amounts can be customized by the user
 - Status: Complete
 - Notes: `GET/PUT /api/v1/blueprints/:id/budget` and `GET /api/v1/expense-categories`, all behind `requireAuth` except the public category list. A budget row is created with its blueprint; reads also create one for blueprints that predate budgets. `PUT` replaces the complete expense item set (omitted categories are removed), rejects duplicate categories, and returns amounts as two-decimal strings. Unknown categories return `404 EXPENSE_CATEGORY_NOT_FOUND`. Totals and other derived values arrive with Split 1.5.
+- Web client: the blueprint detail screen renders one amount field per expense category (prefilled from saved items), keeps a display-only running total, and saves through `PUT /blueprints/:id/budget`, so cleared categories are removed. Derived figures stay out of the client until Split 1.5 exposes them.
 
 ### Split 1.5 — Financial Calculation Engine
 
