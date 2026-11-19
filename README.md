@@ -203,7 +203,7 @@ All routes are versioned under `/api/v1`.
 
 | Method | Route | Auth | Purpose |
 | --- | --- | --- | --- |
-| GET | `/health` | No | Service and database health check |
+| GET | `/api/v1` | No | Service and database health check |
 | GET | `/cities` | No | List reference cities |
 | GET | `/cities/:id` | No | Get one reference city |
 | POST | `/auth/register` | No | Create an account, profile, and session token |
