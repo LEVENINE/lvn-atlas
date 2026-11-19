@@ -1,52 +1,60 @@
-# Merge README — Budget editing in the web client
+# Merge README — Financial calculation engine (Split 1.5)
 
-Branch: `feature/budget-ui`
-Base: `main` at `b9d909a`
-Commit: `65ffa6a` — Add budget editing to the blueprint detail page
+Branch: `feature/financial-calculation-engine`
+Base: `main` at `f913872`
 
 ## Summary
 
-The budgets API (`GET/PUT /api/v1/blueprints/:id/budget`) was already merged, but the web
-client still told users that budgeting was being built. The blueprint detail page now
-edits the blueprint's monthly budget directly.
+Budget figures are now derived server-side. Every budget read and replace returns a
+`summary` computed from the blueprint's expected monthly income and its expense items, so
+clients never calculate or submit totals themselves.
 
 ## What changed
 
-| Area                                         | Change                                                                                                                                                        |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/src/lib/api.ts`                    | Added `ExpenseCategory`, budget expense item, and `Budget` types, plus `expenseCategories()`, `budget(blueprintId)`, and `replaceBudget(blueprintId, items)`. |
-| `apps/web/src/components/BudgetEditor.tsx`   | New editor: loads categories and the saved budget together, one amount field per category, running monthly total, save through the replace-budget endpoint.   |
-| `apps/web/src/pages/BlueprintDetailPage.tsx` | Replaced the "What this plan does not have yet" placeholder with the editor.                                                                                  |
-| `apps/web/src/pages/NewBlueprintPage.tsx`    | Removed the "once budgeting ships" copy.                                                                                                                      |     | `README.md` | Detail screen listed as "Blueprint detail, budget editing, and delete"; budget paragraph rewritten; status focus updated. |
-| `docs/IMPLEMENTATION_PLAN.md`                | Repository status and Split 1.4 notes now cover web budget editing; Delivery Rules state the README update, merge README, and `pnpm check` gate.              |
-| `docs/merge-readme.md`                       | This file, regenerated per merge.                                                                                                                             |
+| Area | Change |
+| --- | --- |
+| `apps/api/src/services/financial.service.ts` | New pure calculation module: decimal sum of expenses plus `summarizeBudget`. |
+| `apps/api/src/services/budget.service.ts` | Budget serialization takes the blueprint income and attaches the summary. |
+| `apps/api/src/controllers/budget.controller.ts` | Passes the owned blueprint's income into budget reads and replaces. |
+| `apps/api/tests/financial.test.ts` | Unit tests for sums, zero expenses, derived savings, negative savings, and formatting. |
+| `apps/api/tests/budgets.test.ts` | Endpoint tests assert the summary on read, on replace, and after clearing a budget. |
+| `bruno/LVN Atlas API/Budgets/*.yml` | Request tests assert the summary fields and recalculation. |
+| `README.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/architecture/01-domain-model.md` | Document the summary, its formulas, and the disposable-income caveat. |
 
-## Behavior
+## API behavior
 
-- Every shared expense category is shown; categories with a saved amount are prefilled.
-- Saving sends only categories with an amount greater than zero, so clearing a field
-  removes that expense item — matching the API's replace-the-complete-set contract.
-- Amounts are rounded to two decimals before the request; negative or non-numeric input
-  is rejected client-side with a `Notice`.
-- The Save button is disabled until something changes; load and save failures render as
-  `Notice`s; a successful save refreshes the fields from the API response.
+Both `GET /api/v1/blueprints/:id/budget` and `PUT /api/v1/blueprints/:id/budget` now
+include:
+
+```json
+"summary": {
+  "expectedMonthlyIncome": "250000.00",
+  "totalExpenses": "37000.00",
+  "expectedSavings": "213000.00",
+  "disposableIncome": "213000.00"
+}
+```
+
+- `totalExpenses` is the decimal sum of the returned expense items.
+- `expectedSavings` is income minus expenses and can be negative.
+- `disposableIncome` equals `expectedSavings` until categories are classified as essential
+  or discretionary.
+- Values are two-decimal strings; no derived value is accepted from the client.
 
 ## Out of scope
 
-Derived figures (savings, remaining income, Atlas Score) stay with Split 1.5, the
-financial calculation engine. The client total is a display-only sum of the entered
-amounts.
+- The web client still shows its own running total while editing and does not render the
+  summary yet.
+- Atlas Score v1 (Split 1.6) will consume this summary.
 
 ## Verification
 
-- `pnpm check` on the branch: exit 0 — lint, typecheck, format, 57 API tests in 7 files,
-  API build, web build.
-- Vite serves `src/components/BudgetEditor.tsx` and `/` with HTTP 200.
-- Not verified: manual click-through of the save round-trip in the browser.
+- `pnpm check` on the branch (see results in the PR).
+- `pnpm --filter @lvn/api test`: 62 tests in 8 files passed, including the new financial
+  and endpoint assertions.
+- Not verified: Bruno collection run against a live database in this session.
 
 ## Merge notes
 
 - No migrations, environment variables, or dependency changes.
-- Merge commit title: `Merge pull request #16 from LEVENINE/feature/budget-ui`
-- Follow-up: Split 1.5 should expose server-computed totals so the client stops summing
-  locally.
+- Merge commit title: `Merge pull request #18 from LEVENINE/feature/financial-calculation-engine`

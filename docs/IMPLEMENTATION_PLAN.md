@@ -25,6 +25,7 @@ Already in place:
 - Authorization: users can only access their own records
 - Migration Blueprint CRUD, scoped to the authenticated user
 - Blueprint budgets and expense items, with shared expense category reference data
+- Server-side budget summary: total expenses, expected savings, and disposable income derived from blueprint income and expense items
 - Bruno collections for health, cities, auth, users, profiles, and blueprints
 - Vitest API tests and a GitHub Actions CI workflow
 - Code-quality scripts: lint, typecheck, test, format, build
@@ -189,6 +190,8 @@ In progress / incomplete:
 - Acceptance criteria:
   - Calculations are derived server-side
   - Updated expense values recalculate budget summaries
+- Status: Complete
+- Notes: `GET/PUT /api/v1/blueprints/:id/budget` now include a `summary` computed from the blueprint's `expectedMonthlyIncome` and returned expense items: `expectedMonthlyIncome`, `totalExpenses`, `expectedSavings` (income minus expenses, negative when expenses exceed income), and `disposableIncome`. All four are two-decimal strings calculated with decimals, never accepted from the client, and they recalculate on every read and replace. Expense categories are not classified as essential or discretionary yet, so every expense counts as essential and `disposableIncome` equals `expectedSavings` until that classification exists. Atlas Score consumption arrives with Split 1.6.
 
 ### Split 1.6 — Atlas Score v1
 

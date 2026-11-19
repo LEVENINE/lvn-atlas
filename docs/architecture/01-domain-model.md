@@ -300,7 +300,7 @@ Expected Savings = Monthly Income - Total Expenses
 
 Represents the projected amount remaining after required or essential expenses.
 
-The exact calculation rules may evolve as expense categories are classified into essential and discretionary expenses.
+The exact calculation rules may evolve as expense categories are classified into essential and discretionary expenses. Until that classification exists, every expense item counts as essential, so `disposableIncome` currently equals `expectedSavings`.
 
 ---
 

@@ -1,6 +1,7 @@
 import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
 import type { ExpenseItemInput } from "../validators/budget.validator.js";
+import { summarizeBudget } from "./financial.service.js";
 
 const expenseItemInclude = {
   category: {
@@ -26,13 +27,20 @@ type BudgetWithItems = Prisma.BudgetGetPayload<{
   include: typeof budgetInclude;
 }>;
 
-function serialize(budget: BudgetWithItems) {
+function serialize(
+  budget: BudgetWithItems,
+  expectedMonthlyIncome: Prisma.Decimal | string,
+) {
   return {
     ...budget,
     expenseItems: budget.expenseItems.map((item) => ({
       ...item,
       amount: item.amount.toFixed(2),
     })),
+    summary: summarizeBudget(
+      expectedMonthlyIncome,
+      budget.expenseItems.map((item) => item.amount),
+    ),
   };
 }
 
@@ -42,7 +50,10 @@ export const budgetService = {
    * still exist. Reading one creates the missing row so every blueprint owns
    * exactly one budget from the client's point of view.
    */
-  async getOrCreate(blueprintId: string) {
+  async getOrCreate(
+    blueprintId: string,
+    expectedMonthlyIncome: Prisma.Decimal | string,
+  ) {
     const budget = await prisma.budget.upsert({
       where: {
         blueprintId,
@@ -54,7 +65,7 @@ export const budgetService = {
       include: budgetInclude,
     });
 
-    return serialize(budget);
+    return serialize(budget, expectedMonthlyIncome);
   },
 
   async findMissingCategoryIds(categoryIds: string[]) {
@@ -81,6 +92,7 @@ export const budgetService = {
   async replaceExpenseItems(
     blueprintId: string,
     expenseItems: ExpenseItemInput[],
+    expectedMonthlyIncome: Prisma.Decimal | string,
   ) {
     const budget = await prisma.$transaction(async (transaction) => {
       const current = await transaction.budget.upsert({
@@ -117,6 +129,6 @@ export const budgetService = {
       });
     });
 
-    return serialize(budget);
+    return serialize(budget, expectedMonthlyIncome);
   },
 };
